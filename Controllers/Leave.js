@@ -81,8 +81,7 @@ export const updateLeaveStatus = async (req, res) => {
       userId: leave.internid,
       taskId: leave._id,
       status,
-      updatedBy:leave.updatedBy,
-      message: `Your leave application has been ${status.toLowerCase()} By ${leave.updatedBy}.`,
+         message: `Your leave application has been ${status.toLowerCase()} By ${leave.updatedBy}.`,
     };
 
     try {
