@@ -81,11 +81,13 @@ export const updateLeaveStatus = async (req, res) => {
       userId: leave.internid,
       taskId: leave._id,
       status,
-      message: `Your leave application has been ${status.toLowerCase()}.`,
+      updatedBy:leave.updatedBy,
+      message: `Your leave application has been ${status.toLowerCase()} By ${leave.updatedBy}.`,
     };
 
     try {
       await axios.post(`${process.env.BACKEND_ENDPOINT}/send/notification`, notificationPayload);
+     
     } catch (notificationError) {
       console.error('Error sending notification:', notificationError.response?.data || notificationError.message);
     }
@@ -94,6 +96,7 @@ export const updateLeaveStatus = async (req, res) => {
       message: 'Leave application updated successfully and notification sent!',
       leave,
     });
+    
   } catch (error) {
     console.error('Error updating leave application:', error);
     res.status(500).json({ message: 'Error updating leave application', error });
