@@ -55,6 +55,12 @@ const UserSchema = new Schema({
 		default: Date.now,
 		set: (value) => moment(value).format("YYYY-MM-DD"), // Only date, no time
 	},
+	EndDate: {
+		type: Date,
+		
+		set: (value) => moment(value).format("YYYY-MM-DD"), // Only date, no time
+	},
+	
 });
 
 export default mongoose.model("User", UserSchema);
