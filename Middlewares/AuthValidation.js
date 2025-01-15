@@ -11,6 +11,14 @@ export const signupValidation = (req, res, next) => {
     name: Joi.string().required().messages({
       'string.empty': 'Name is required',
     }),
+    department: Joi.string()
+    .valid('development', 'hr', 'research')  // Restrict to only these values
+    .required()  // Ensure the field is required
+    .messages({
+      'string.empty': 'Name is required',  // Custom message for empty field
+      'any.only': 'Department must be one of [development, hr, research]',  // Custom message for invalid department
+    }),
+
 
     mnumber: Joi.string()
       .pattern(/^\+?\d{1,4}[3-9]\d{9}$/) // Allow numbers starting with 3, 6, 7, 8, or 9
