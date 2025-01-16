@@ -10,10 +10,10 @@ const secretKey = process.env.JWT_SECRET;
 
 export const signup = async (req, res) => {
     try {
-        const { name, email, password, rpassword, mnumber,EndDate,department } = req.body;
+        const { name, email, password, rpassword, mnumber,EndDate,department ,startDate} = req.body;
 
         // Validate fields
-        if (!name || !email || !password || !mnumber || !rpassword || !EndDate || !department) {
+        if (!name || !email || !password || !mnumber || !rpassword || !EndDate || !department || !startDate) {
             return res.status(400).json({ message: "All fields are required.", success: false });
         }
 
@@ -40,6 +40,7 @@ export const signup = async (req, res) => {
             mnumber,
             EndDate,
             department,
+            startDate,
         });
 
         await newUser.save();
