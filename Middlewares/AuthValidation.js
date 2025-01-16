@@ -1,6 +1,7 @@
 import Joi from 'joi';
 import moment from 'moment';
 
+
 // Signup Validation Middleware
 export const signupValidation = (req, res, next) => {
   req.body.name = req.body.name?.trim();
@@ -10,16 +11,24 @@ export const signupValidation = (req, res, next) => {
     name: Joi.string().required().messages({
       'string.empty': 'Name is required',
     }),
+    department: Joi.string()
+    .valid('development', 'hr', 'research')  // Restrict to only these values
+    .required()  // Ensure the field is required
+    .messages({
+      'string.empty': 'Name is required',  // Custom message for empty field
+      'any.only': 'Department must be one of [development, hr, research]',  // Custom message for invalid department
+    }),
+
 
     mnumber: Joi.string()
-    .pattern(/^\+?\d{1,4}[3-9]\d{9}$/)  // Allow numbers starting with 3, 6, 7, 8, or 9
-    .required()
-    .messages({
-      'string.base': 'Mobile number must be a valid string',
-      'string.pattern.base': 'Mobile number must be a valid 10-digit number starting with 3, 6, 7, 8, or 9, with an optional country code',
-      'any.required': 'Mobile number is required',
-    }),
-  
+      .pattern(/^\+?\d{1,4}[3-9]\d{9}$/) // Allow numbers starting with 3, 6, 7, 8, or 9
+      .required()
+      .messages({
+        'string.base': 'Mobile number must be a valid string',
+        'string.pattern.base': 'Mobile number must be a valid 10-digit number starting with 3, 6, 7, 8, or 9, with an optional country code',
+        'any.required': 'Mobile number is required',
+      }),
+
     email: Joi.string().email().required().messages({
       'string.email': 'Email must be a valid email address',
       'any.required': 'Email is required',
@@ -54,7 +63,29 @@ export const signupValidation = (req, res, next) => {
     }).default(() => new Date()).messages({
       'date.base': 'Start date must be a valid date in YYYY-MM-DD or DD-MM-YYYY format',
     }),
-  }).strict();
+
+    // Custom validation for 'endDate' with correct use of helpers
+    EndDate: Joi.custom((value, helpers) => {
+      if (!value) {
+        return helpers.error('date.base', { value: 'End date is required' });
+      }
+      const date = moment(value, ['YYYY-MM-DD', 'DD-MM-YYYY'], true);
+      if (!date.isValid()) {
+        return helpers.error('date.base', { value });
+      }
+
+      // Compare endDate with startDate using helpers.state
+      const { startDate } = helpers.state.ancestors[0];
+      if (startDate && moment(value).isBefore(moment(startDate))) {
+        return helpers.error('date.base', { value: 'End date must be after start date' });
+      }
+
+      return date.toDate();
+    }).messages({
+      'date.base': 'End date must be a valid date in YYYY-MM-DD or DD-MM-YYYY format and after the start date.',
+    }),
+
+  }).strict(); // Ensures that only the defined fields are allowed
 
   const { error } = schema.validate(req.body);
   if (error) {
@@ -63,6 +94,7 @@ export const signupValidation = (req, res, next) => {
   }
   next();
 };
+
 
 // Login Validation Middleware
 export const loginValidation = (req, res, next) => {

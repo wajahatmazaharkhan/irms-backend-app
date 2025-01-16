@@ -7,19 +7,20 @@ import Notification from '../Models/Notification.js';
 export const startCronJobs = () => {
   console.log("Cron jobs initialized.");
 
-  cron.schedule('0 0 * * *', async () => {
+  cron.schedule('0 0  * * *', async () => {
     try {
       const today = new Date();
+      today.setHours(0, 0, 0, 0);
+  
+      const twoDaysAgo = new Date(today);
+      twoDaysAgo.setDate(today.getDate() - 2);
       console.log("Cron job running");
 
-      // 1. Identify accounts to be deleted tomorrow and send notifications
-      const notificationDate = new Date();
-      notificationDate.setDate(today.getDate() - 69);
+      // // 1. Identify accounts to be deleted tomorrow and send notifications
+      
 
-      const usersToNotify = await User.find({
-        startDate: { $lt: notificationDate },
-        role: 'intern',
-      });
+    
+      const usersToNotify = await User.find({Enddate: { $lt: twoDaysAgo}})
 
       for (const user of usersToNotify) {
         // Create and send a notification
@@ -38,16 +39,39 @@ export const startCronJobs = () => {
         console.log(`Notification sent to user with ID ${user._id}.`);
       }
 
-      // 2. Delete accounts older than 70 days
-      const bufferDate = new Date();
-      bufferDate.setDate(today.getDate() - 70);
+      // 2. Delete accounts
+      
 
-      const expiredAccountsResult = await User.deleteMany({
-        startDate: { $lt: bufferDate },
-        role: 'intern',
+
+    const now = new Date();
+    console.log(`Current date (UTC): ${now.toISOString()}`);
+    const tenDaysInMillis = 10 * 24 * 60 * 60 * 1000;
+    // Fetch accounts with EndDate earlier than the current date
+    const accountsToDelete = await User.find({ EndDate:  { $lt: new Date(now.getTime() - tenDaysInMillis) } });
+
+    if (accountsToDelete.length === 0) {
+      console.log("No accounts found for deletion.");
+    } else {
+      console.log(`Accounts to be deleted: ${accountsToDelete.length}`);
+      accountsToDelete.forEach(account => {
+        console.log(`Account ID: ${account._id}, EndDate: ${account.EndDate}`);
       });
 
-      console.log(`${expiredAccountsResult.deletedCount} accounts deleted for exceeding 70 days.`);
+      // Delete the accounts 
+  
+      const deleteResult = await User.deleteMany({
+        _id: { $in: accountsToDelete.map(account => account._id) }
+      });
+
+      console.log(`${deleteResult.deletedCount} accounts deleted for exceeding the EndDate.`);
+    }
+
+
+
+
+
+
+
 
       // 3. Check consecutive absences excluding leave dates
       const attendanceData = await Attendance.aggregate([
