@@ -15,7 +15,7 @@ import projectRoutes from "./Routes/ProjectRoutes.js";
 import taskSubmitRoutes from "./Routes/Tasksubmitionroutes.js";
 import notificationRouter from "./Routes/notificationRouter.js";
 import leaveRoutes from "./Routes/Leave.js";
-
+import HrInternAssociation from "./Routes/HrInternRoutes.js";
 dotenv.config();
 
 const app = express();
@@ -43,6 +43,7 @@ app.use("/weeklystatus", submitReportRoutes);
 app.use("/", taskSubmitRoutes);
 app.use("/send", notificationRouter);
 app.use("/", leaveRoutes);
+app.use("/",HrInternAssociation);
 
 const responses = {
 	hello: "Hi! How can I assist you?",
