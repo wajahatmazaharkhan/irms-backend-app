@@ -10,13 +10,20 @@ export const addTask = async (req, res) => {
     }
 
     try {
-        const addTask = new Task({
+        //Checking if the user we are assigning to exists or not
+        const userExist = await User.findById(assignedTo);
+
+        if(!userExist){
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const assignTask = new Task({
             assignedTo, title, description, startDate, endDate, status
         });
 
-        const storeData = await addTask.save();
+        const storeData = await assignTask.save();
         console.log(storeData);
-        res.status(200).json({ storeData });
+        res.status(201).json({ storeData });
     } catch (error) {
         res.status(400).json(error);
     }
@@ -24,7 +31,6 @@ export const addTask = async (req, res) => {
 
 
 //getting all the tasks
-
 export const getTasks = async (req, res) => {
     try {
         const { userId } = req.params;
@@ -51,7 +57,6 @@ export const getTasks = async (req, res) => {
         res.status(400).json({ message: "Error fetching tasks", error });
     }
 };
-
 
 
 //updating task 
@@ -85,6 +90,7 @@ export const getTaskDetails = async (req, res) => {
         console.error("Error getting task details:", error);
     }
 }
+
 
 //deleting task
 export const deleteTask = async (req, res) => {
