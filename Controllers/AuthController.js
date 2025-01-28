@@ -16,6 +16,11 @@ export const signup = async (req, res) => {
         if (!name || !email || !password || !mnumber || !rpassword || !EndDate || !department || !startDate) {
             return res.status(400).json({ message: "All fields are required.", success: false });
         }
+        
+        let role = "user"; // Default role
+        if (department === 'hr') {
+            role = 'hr';
+        }
 
         // Check if passwords match
         if (password !== rpassword) {
@@ -41,6 +46,7 @@ export const signup = async (req, res) => {
             EndDate,
             department,
             startDate,
+            role,
         });
 
         await newUser.save();
@@ -102,6 +108,7 @@ export const login = async (req, res) => {
                 name: user.name,
                 email: user.email,
                 isAdmin: user.isAdmin,
+                role:user.role,
             },
         });
         console.log(`${user.name} just logged in to IISPPR!`);
