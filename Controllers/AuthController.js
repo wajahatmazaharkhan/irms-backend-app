@@ -17,7 +17,7 @@ export const signup = async (req, res) => {
             return res.status(400).json({ message: "All fields are required.", success: false });
         }
         
-        let role = "user"; // Default role
+        let role = "intern"; // Default role
         if (department === 'hr') {
             role = 'hr';
         }
