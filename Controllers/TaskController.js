@@ -4,21 +4,28 @@ import User from "../Models/User.js";
 // adding new task
 export const addTask = async (req, res) => {
     const { assignedTo, title, description, startDate, endDate, status } = req.body;
-
     if (!assignedTo || !title || !description || !startDate || !endDate || !status) {
-        res.status(400).json({ error: "please fill all the fields" });
+        return res.status(400).json({ error: "Please fill all the fields" });
     }
-
     try {
-        const addTask = new Task({
-            assignedTo, title, description, startDate, endDate, status
+        const userExists = await User.findById(assignedTo);
+        if (!userExists) {
+            return res.status(404).json({ error: "Assigned user not found" });
+        }
+        const task = new Task({
+            assignedTo, 
+            title, 
+            description, 
+            startDate, 
+            endDate, 
+            status
         });
-
-        const storeData = await addTask.save();
+        const storeData = await task.save();
         console.log(storeData);
-        res.status(200).json({ storeData });
+        res.status(201).json({ message: "Task assigned successfully", task: storeData });
     } catch (error) {
-        res.status(400).json(error);
+        console.error("Error adding task:", error);
+        res.status(500).json({ error: "Internal Server Error" });
     }
 };
 
