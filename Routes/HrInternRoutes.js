@@ -6,6 +6,7 @@ import {
     checkInternAssignment,
     batchCheckInternAssignments,
     getInternsTaskCompletions,
+    getProgressReport,
 }  from '../Controllers/HrInternAssociation.js';
 
 import { ensureAuthenticated } from '../Middlewares/Auth.js';
@@ -22,5 +23,6 @@ router.get('/intern/assigned/:internId', checkInternAssignment);
 // Route to batch check interns for assignment
 router.post('/interns/assigned', batchCheckInternAssignments);
 
-router.get('/interns/getTask',ensureAuthenticated,getInternsTaskCompletions)
+router.get('/interns/getTask',ensureAuthenticated,getInternsTaskCompletions);
+router.get('/interns/getProgress-report',ensureAuthenticated,getProgressReport);
 export default  router;
