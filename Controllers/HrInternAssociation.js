@@ -4,7 +4,7 @@ import User from '../Models/User.js'
 
 import TaskCompletion from "../Models/Tasksubmition.js";
 
-
+import  WeeklyStatus   from "../Models/Report.js"
 
 // Assign an intern to an HR
   export const assignInternToHR = async (req, res) => {
@@ -145,3 +145,31 @@ export const getInternsTaskCompletions = async (req,res) => {
     }
 };
 
+export const getProgressReport = async (req, res) => {
+
+    try {
+      const hrId  = req.user.id;
+      console.log(hrId);
+  
+      // Find the HR's interns
+      const hrIntern = await HRIntern.findOne({ hrId }).populate("internIds");
+  
+      if (!hrIntern) {
+        return res.status(404).json({ error: "HR not found or has no interns." });
+      }
+  
+      // Extract intern IDs
+      const internIds = hrIntern.internIds.map(intern => intern._id);
+  
+      // Fetch weekly status reports of these interns
+      const weeklyReports = await WeeklyStatus.find({ employee_id: { $in: internIds } });
+  
+      res.status(200).json({ reports: weeklyReports });
+    } catch (error) {
+      console.error("Error fetching intern reports:", error);
+      res.status(500).json({ error: "An error occurred while fetching reports." });
+    }
+  
+
+
+}
