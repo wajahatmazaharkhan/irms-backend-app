@@ -1,5 +1,11 @@
 import  HRIntern from '../Models/HrInternAssociation.js'
 import User from '../Models/User.js'
+
+
+import TaskCompletion from "../Models/Tasksubmition.js";
+
+import  WeeklyStatus   from "../Models/Report.js"
+
 // Assign an intern to an HR
   export const assignInternToHR = async (req, res) => {
   const { hrId, internId } = req.body;
@@ -106,3 +112,64 @@ export  const batchCheckInternAssignments = async (req, res) => {
 };
 
 
+
+
+
+
+
+export const getInternsTaskCompletions = async (req,res) => {
+    try {
+     const hrId=req.user.id;
+        // Find HR document to get intern IDs
+        const hrIntern = await HRIntern.findOne({ hrId });
+
+        if (!hrIntern) {
+            res.status(400).json( { error: "no interns found" });
+        }
+
+        const internIds = hrIntern.internIds;
+
+        if (internIds.length === 0) {
+          res.status(200).json({ taskCompletions: [] }) ;
+        }
+
+        // Fetch task completions submitted by these interns
+        const taskCompletions = await TaskCompletion.find({ user: { $in: internIds } })
+            .populate("user", "name email")  // Populate intern details
+            .populate("task", "title description");  // Populate task details
+
+        res.status(200).json( { taskCompletions });
+    } catch (error) {
+        console.error(error);
+        return { error: "Internal Server Error" };
+    }
+};
+
+export const getProgressReport = async (req, res) => {
+
+    try {
+      const hrId  = req.user.id;
+      console.log(hrId);
+  
+      // Find the HR's interns
+      const hrIntern = await HRIntern.findOne({ hrId }).populate("internIds");
+  
+      if (!hrIntern) {
+        return res.status(404).json({ error: "HR not found or has no interns." });
+      }
+  
+      // Extract intern IDs
+      const internIds = hrIntern.internIds.map(intern => intern._id);
+  
+      // Fetch weekly status reports of these interns
+      const weeklyReports = await WeeklyStatus.find({ employee_id: { $in: internIds } });
+  
+      res.status(200).json({ reports: weeklyReports });
+    } catch (error) {
+      console.error("Error fetching intern reports:", error);
+      res.status(500).json({ error: "An error occurred while fetching reports." });
+    }
+  
+
+
+}

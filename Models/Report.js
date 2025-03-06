@@ -1,9 +1,13 @@
 import mongoose from "mongoose";
 
 const WeeklyStatusSchema = new mongoose.Schema({
-  employee: {
-    type: String,
+  employee_id: {
+    type: mongoose.Schema.Types.ObjectId,
     required: true,
+  },
+  employeeName: {
+    type:String,
+    required:true,
   },
   department: {
     type: String,
