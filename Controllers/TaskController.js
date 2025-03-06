@@ -8,21 +8,20 @@ export const addTask = async (req, res) => {
         return res.status(400).json({ error: "Please fill all the fields" });
     }
     try {
-        const userExists = await User.findById(assignedTo);
-        if (!userExists) {
-            return res.status(404).json({ error: "Assigned user not found" });
+        //Checking if the user we are assigning to exists or not
+        const userExist = await User.findById(assignedTo);
+
+        if(!userExist){
+            return res.status(404).json({ message: "User not found" });
         }
-        const task = new Task({
-            assignedTo, 
-            title, 
-            description, 
-            startDate, 
-            endDate, 
-            status
+
+        const assignTask = new Task({
+            assignedTo, title, description, startDate, endDate, status
         });
-        const storeData = await task.save();
+
+        const storeData = await assignTask.save();
         console.log(storeData);
-        res.status(201).json({ message: "Task assigned successfully", task: storeData });
+        res.status(201).json({ storeData });
     } catch (error) {
         console.error("Error adding task:", error);
         res.status(500).json({ error: "Internal Server Error" });
@@ -31,7 +30,6 @@ export const addTask = async (req, res) => {
 
 
 //getting all the tasks
-
 export const getTasks = async (req, res) => {
     try {
         const { userId } = req.params;
@@ -58,7 +56,6 @@ export const getTasks = async (req, res) => {
         res.status(400).json({ message: "Error fetching tasks", error });
     }
 };
-
 
 
 //updating task 
@@ -92,6 +89,7 @@ export const getTaskDetails = async (req, res) => {
         console.error("Error getting task details:", error);
     }
 }
+
 
 //deleting task
 export const deleteTask = async (req, res) => {
