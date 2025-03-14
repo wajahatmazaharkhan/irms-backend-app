@@ -3,7 +3,7 @@ import { CloudinaryStorage } from "multer-storage-cloudinary";
 import cloudinary from "../config/cloudinaryConfig.js";
 import TaskCompletion from "../Models/Tasksubmition.js";
 import { ensureAuthenticated } from "../Middlewares/Auth.js";
-import User from "../Models/User.js"; 
+import User from "../Models/User.js";
 
 // Configure Multer for Cloudinary storage
 const storage = new CloudinaryStorage({
@@ -22,7 +22,9 @@ const upload = multer({
 // Controller for submitting task completion data
 export const submitTaskCompletion = async (req, res) => {
   try {
-    const userId = req.user?._id || req.user?.id;  
+    const userId = req.user?._id || req.user?.id;
+    const userName = userId.name;
+    console.log(`Task submission in progress by: ${userName}`)
 
     if (!userId) {
       return res.status(403).json({ message: "Unauthorized. User information is missing." });
@@ -70,8 +72,8 @@ export const submitTaskCompletion = async (req, res) => {
 export const getTasksreports = async (req, res) => {
   try {
     const tasks = await TaskCompletion.find()
-      .sort({ createdAt: -1 }) 
-      .populate("user", "name") 
+      .sort({ createdAt: -1 })
+      .populate("user", "name")
     res.status(200).json(tasks);
   } catch (error) {
     console.error("Error fetching tasks:", error);

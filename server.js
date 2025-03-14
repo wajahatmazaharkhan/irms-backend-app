@@ -24,11 +24,13 @@ app.use(express.json());
 app.use("/uploads", express.static("projectimageuploads"));
 
 const corsOptions = {
-	origin: ['https://scaleindia.org.in', 'https://www.scaleindia.org.in', 'https://www.scaleindia.org.in/', 'http://localhost:5173'],
+	origin: ["https://www.scaleindia.org.in/", "http://localhost:5173"],
 	methods: ['GET', 'POST', 'DELETE', 'PUT', 'PATCH', 'HEAD'],
 	credentials: true,
 	allowedHeaders: ['Content-Type', 'Authorization']
 };
+
+const newCors = { origin: "http://localhost:5173" }
 
 app.use(cors(corsOptions));
 
@@ -43,7 +45,7 @@ app.use("/weeklystatus", submitReportRoutes);
 app.use("/", taskSubmitRoutes);
 app.use("/send", notificationRouter);
 app.use("/", leaveRoutes);
-app.use("/",HrInternAssociation);
+app.use("/", HrInternAssociation);
 
 const responses = {
 	hello: "Hi! How can I assist you?",
