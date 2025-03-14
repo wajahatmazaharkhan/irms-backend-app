@@ -5,7 +5,7 @@ import path from 'path';
 
 // Configuration
 cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME_NEW,
     api_key: process.env.CLOUDINARY_CLOUD_API_KEY,
     api_secret: process.env.CLOUDINARY_CLOUD_API_SECRET
 });
