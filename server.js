@@ -20,19 +20,27 @@ dotenv.config();
 
 const app = express();
 
-app.use(express.json());
+
 app.use("/uploads", express.static("projectimageuploads"));
 
 const corsOptions = {
 	origin: "https://www.scaleindia.org.in",
-	methods: ['GET', 'POST', 'DELETE', 'PUT', 'PATCH', 'HEAD'],
 	credentials: true,
-	allowedHeaders: ['Content-Type', 'Authorization']
-};
+	methods: "GET, POST, DELETE, PATCH, HEAD, PUT, OPTIONS",
+	allowedHeaders: [
+	  "Content-Type",
+	  "Authorization",
+	  "Access-Control-Allow-Credentials",
+	  "cache-control",
+	],
+	exposedHeaders: ["Authorization"],
+  };
 
 const newCors = { origin: "http://localhost:5173" }
 
+app.use(express.json());
 app.use(cors(corsOptions));
+
 
 app.use("/api/auth", router);
 app.use("/user", passwordUpdateRouter);
