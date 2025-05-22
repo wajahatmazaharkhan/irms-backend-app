@@ -39,7 +39,7 @@ const corsOptions = {
 const newCors = { origin: "http://localhost:5173" }
 
 app.use(express.json());
-app.use(cors(corsOptions));
+app.use(cors(newCors));
 
 
 app.use("/api/auth", router);
