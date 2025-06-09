@@ -24,17 +24,17 @@ const app = express();
 app.use("/uploads", express.static("projectimageuploads"));
 
 const corsOptions = {
-	origin: "https://www.scaleindia.org.in",
+	origin: ["https://www.scaleindia.org.in", "http://localhost:5173"],
 	credentials: true,
 	methods: "GET, POST, DELETE, PATCH, HEAD, PUT, OPTIONS",
 	allowedHeaders: [
-	  "Content-Type",
-	  "Authorization",
-	  "Access-Control-Allow-Credentials",
-	  "cache-control",
+		"Content-Type",
+		"Authorization",
+		"Access-Control-Allow-Credentials",
+		"cache-control",
 	],
 	exposedHeaders: ["Authorization"],
-  };
+};
 
 const newCors = { origin: "http://localhost:5173" }
 
