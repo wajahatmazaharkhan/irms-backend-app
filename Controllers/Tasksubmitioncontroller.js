@@ -24,7 +24,7 @@ const upload = multer({
 // Controller for submitting task completion data
 export const submitTaskCompletion = async (req, res) => {
   try {
-    const userId = req.user?._id || req.user?.id;
+    const userId = req.user._id||req.user.id; // Ensure user ID is available from the request
     console.log(`Task submission in progress by user: ${userId}`);
 
     if (!userId) {
@@ -60,6 +60,8 @@ export const submitTaskCompletion = async (req, res) => {
 
     // Find the user's batch
     const user = await User.findById(userId);
+    console.log(`User found: ${user ? user.name : "Unknown"}`);
+    console.log(`User's batch ID: ${user ? user.batch : "Not assigned"}`);
     if (!user || !user.batch) {
       return res.status(404).json({ error: "User not found or not assigned to a batch" });
     }
@@ -69,6 +71,7 @@ export const submitTaskCompletion = async (req, res) => {
     if (!batch || !batch.interns.includes(userId)) {
       return res.status(403).json({ error: "User is not in this batch" });
     }
+    console.log(user.batch);
 
     // Create and save the task completion
     const taskCompletion = new TaskCompletion({

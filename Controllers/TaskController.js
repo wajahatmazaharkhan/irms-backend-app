@@ -4,46 +4,63 @@ import Batch from "../Models/batchModel.js";
 
 // adding new task
 export const addTask = async (req, res) => {
-    const { assignedTo, title, description, startDate, endDate, status } = req.body;
-    if (!assignedTo || !title || !description || !startDate || !endDate || !status) {
-        return res.status(400).json({ error: "Please fill all the fields" });
+  const { assignedTo, title, description, startDate, endDate, status } = req.body;
+
+  if (!assignedTo || !title || !description || !startDate || !endDate || !status) {
+    return res.status(400).json({ error: "Please fill all the fields" });
+  }
+
+  try {
+    const user = await User.findById(assignedTo);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
-    try {
-        //Checking if the user we are assigning to exists or not
-        const userExist = await User.findById(assignedTo);
 
-        if(!userExist){
-            return res.status(404).json({ message: "User not found" });
-        }
-
-        const assignTask = new Task({
-            assignedTo, title, description, startDate, endDate, status
-        });
-
-        const storeData = await assignTask.save();
-
-        // Get user's batch
-        const userBatch = await User.findById(assignedTo).select('batch');
-        if (userBatch && userBatch.batch) {
-            // Update batch with new task
-            await Batch.findByIdAndUpdate(userBatch.batch, {
-                $inc: { allTasks: 1 },
-                $push: {
-                    tasks: {
-                        taskId: storeData._id,
-                        status: "pending",
-                        assignedTo: assignedTo
-                    }
-                }
-            });
-        }
-
-        console.log(storeData);
-        res.status(201).json({ storeData });
-    } catch (error) {
-        console.error("Error adding task:", error);
-        res.status(500).json({ error: "Internal Server Error" });
+    // ✅ If user's batch is null, try to find it from any batch that includes them
+    if (!user.batch) {
+      const batch = await Batch.findOne({ interns: assignedTo });
+      if (batch) {
+        user.batch = batch._id;
+        await user.save(); // ✅ Save updated user
+      }
     }
+
+    if (!user.batch) {
+      return res.status(400).json({ error: "User not assigned to a batch" });
+    }
+
+    // ✅ Proceed to create task
+    const assignTask = new Task({
+      assignedTo,
+      title,
+      description,
+      startDate,
+      endDate,
+      status
+    });
+
+    const storeData = await assignTask.save();
+
+    // ✅ Update batch with task info
+    await Batch.findByIdAndUpdate(user.batch, {
+      $inc: { allTasks: 1 },
+      $push: {
+        tasks: {
+          taskId: storeData._id,
+          status: "pending",
+          assignedTo: assignedTo
+        }
+      }
+    });
+
+    console.log(storeData);
+    res.status(201).json({ storeData });
+
+  } catch (error) {
+    console.error("Error adding task:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 };
 
 
