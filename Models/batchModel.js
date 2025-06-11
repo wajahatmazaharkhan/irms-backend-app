@@ -30,6 +30,29 @@ const BatchSchema = new Schema({
       },
     ],
   },
+  allTasks: {
+    type: Number,
+    default: 0,
+  },
+  completedTasks: {
+    type: Number,
+    default: 0,
+  },
+  tasks: [{
+    taskId: {
+      type: Schema.Types.ObjectId,
+      ref: "Task"
+    },
+    status: {
+      type: String,
+      enum: ["pending", "completed"],
+      default: "pending"
+    },
+    assignedTo: {
+      type: Schema.Types.ObjectId,
+      ref: "User"
+    }
+  }]
 });
 
 export default mongoose.model("Batch", BatchSchema);

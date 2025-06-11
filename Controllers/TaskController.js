@@ -1,5 +1,6 @@
 import Task from '../Models/Task.js';
 import User from "../Models/User.js";
+import Batch from "../Models/batchModel.js";
 
 // adding new task
 export const addTask = async (req, res) => {
@@ -20,6 +21,23 @@ export const addTask = async (req, res) => {
         });
 
         const storeData = await assignTask.save();
+
+        // Get user's batch
+        const userBatch = await User.findById(assignedTo).select('batch');
+        if (userBatch && userBatch.batch) {
+            // Update batch with new task
+            await Batch.findByIdAndUpdate(userBatch.batch, {
+                $inc: { allTasks: 1 },
+                $push: {
+                    tasks: {
+                        taskId: storeData._id,
+                        status: "pending",
+                        assignedTo: assignedTo
+                    }
+                }
+            });
+        }
+
         console.log(storeData);
         res.status(201).json({ storeData });
     } catch (error) {
