@@ -4,6 +4,7 @@ import {
   updateUser,
   deleteUser,
   uploadProfilePicture,
+  getBatchProgress
 } from "../Controllers/admincontroller.js";
 import {
   createBatch,
