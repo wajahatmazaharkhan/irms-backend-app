@@ -164,13 +164,25 @@ export const getBatchesWithCounts = async (req, res) => {
 export const getBatchProgress = async (req, res) => {
   try {
     const batches = await Batch.find()
-      .populate("tasks.taskId", "title description")
-      .populate("tasks.assignedTo", "name email");
+      .populate({
+        path: "tasks.taskId",
+        select: "title description"
+      })
+      .populate({
+        path: "tasks.assignedTo",
+        select: "name email"
+      });
 
     const progressData = batches.map((batch) => {
-      const progress = batch.allTasks > 0 ? (batch.completedTasks / batch.allTasks) * 100 : 0;
+      const taskList = batch.tasks || [];
 
-      const taskStats = (batch.tasks || []).reduce((acc, task) => {
+      // 🔄 Dynamic counts
+      const allTasks = taskList.length;
+      const completedTasks = taskList.filter(task => task.status === "completed").length;
+      const progress = allTasks > 0 ? (completedTasks / allTasks) * 100 : 0;
+
+      // ⏱️ Status breakdown
+      const taskStats = taskList.reduce((acc, task) => {
         acc[task.status] = (acc[task.status] || 0) + 1;
         return acc;
       }, { pending: 0, completed: 0 });
@@ -180,11 +192,11 @@ export const getBatchProgress = async (req, res) => {
         name: batch.name,
         startDate: batch.startDate,
         endDate: batch.endDate,
-        allTasks: batch.allTasks,
-        completedTasks: batch.completedTasks,
+        allTasks,
+        completedTasks,
         progress: parseFloat(progress.toFixed(2)),
         taskStats,
-        tasks: (batch.tasks || []).map(task => ({
+        tasks: taskList.map(task => ({
           taskId: task.taskId,
           title: task.taskId?.title,
           description: task.taskId?.description,
@@ -204,6 +216,7 @@ export const getBatchProgress = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
 
 // Delete a batch
 export const deleteBatch = async (req, res) => {

@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import multer from "multer";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 import cloudinary from "../config/cloudinaryConfig.js";
@@ -24,9 +25,7 @@ const upload = multer({
 // Controller for submitting task completion data
 export const submitTaskCompletion = async (req, res) => {
   try {
-    const userId = req.user._id||req.user.id; // Ensure user ID is available from the request
-    console.log(`Task submission in progress by user: ${userId}`);
-
+    const userId = req.user._id || req.user.id;
     if (!userId) {
       return res.status(403).json({ message: "Unauthorized. User information is missing." });
     }
@@ -41,60 +40,58 @@ export const submitTaskCompletion = async (req, res) => {
       return res.status(400).json({ error: "Comments/Description are required." });
     }
 
-    // Extract and handle files
+    // Handle uploaded files
     const fileData = req.files || {};
-    const uploadedFiles = {};
+    const uploadedFiles = {
+      file: fileData.file?.[0]?.path || null,
+      image: fileData.image?.[0]?.path || null,
+    };
 
-    if (fileData.file) {
-      uploadedFiles.file = fileData.file[0].path;
-    }
-    if (fileData.image) {
-      uploadedFiles.image = fileData.image[0].path;
-    }
-
-    // Find the task
+    // Validate Task
     const task = await Task.findById(taskId);
     if (!task) {
       return res.status(404).json({ error: "Task not found" });
     }
 
-    // Find the user's batch
+    // Validate User
     const user = await User.findById(userId);
-    console.log(`User found: ${user ? user.name : "Unknown"}`);
-    console.log(`User's batch ID: ${user ? user.batch : "Not assigned"}`);
     if (!user || !user.batch) {
       return res.status(404).json({ error: "User not found or not assigned to a batch" });
     }
 
-    // Find the batch and check if user is in interns array
+    // Validate Batch and Membership
     const batch = await Batch.findById(user.batch);
-    if (!batch || !batch.interns.includes(userId)) {
+    if (!batch || !batch.interns.includes(user._id)) {
       return res.status(403).json({ error: "User is not in this batch" });
     }
-    console.log(user.batch);
 
-    // Create and save the task completion
+    // Create and Save TaskCompletion
     const taskCompletion = new TaskCompletion({
-      user: userId,
-      task: taskId,
+      user: user._id,
+      task: task._id,
       comments,
-      file: uploadedFiles.file || null,
-      image: uploadedFiles.image || null,
+      file: uploadedFiles.file,
+      image: uploadedFiles.image,
     });
 
     await taskCompletion.save();
 
-    // Update task status and batch progress
-    task.status = 'completed';
+    // ✅ Mark task as completed
+    task.status = "completed";
     await task.save();
-    
-    // Update batch progress and task status
-    await Batch.findByIdAndUpdate(user.batch, {
+
+    // ✅ Update batch: increment completedTasks and update task status in tasks[]
+    await Batch.findByIdAndUpdate(
+      user.batch,
+      {
         $inc: { completedTasks: 1 },
-        $set: { "tasks.$[elem].status": "completed" }
-    }, {
-        arrayFilters: [{ "elem.taskId": taskId }]
-    });
+        $set: { "tasks.$[elem].status": "completed" },
+      },
+      {
+        arrayFilters: [{ "elem.taskId": new mongoose.Types.ObjectId(taskId) }],
+        new: true,
+      }
+    );
 
     res.status(201).json({ message: "Task submitted successfully.", taskCompletion });
   } catch (error) {
