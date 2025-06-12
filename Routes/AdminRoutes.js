@@ -4,13 +4,15 @@ import {
   updateUser,
   deleteUser,
   uploadProfilePicture,
+} from "../Controllers/admincontroller.js";
+
+import {
   getBatchProgress,
-    createBatch,
+  createBatch,
   getBatchesWithCounts,
- 
   deleteBatch,
+  getBatchById,
   updateBatch,
-  getBatchProgress,
 } from "../Controllers/batchController.js";
 
 
@@ -30,6 +32,12 @@ router.post("/batches", createBatch);
 
 // Route to update a user
 router.put("/update/:userid", uploadProfilePicture, updateUser);
+
+// Route to get details of a batch
+router.get("/batches/:id", getBatchById);
+
+// Route to edit details of a batch
+router.put("/batches/:id", updateBatch);
 
 // Route to delete a user
 router.delete("/delete/:userid", deleteUser);

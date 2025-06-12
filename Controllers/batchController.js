@@ -71,8 +71,6 @@ export const createBatch = async (req, res) => {
 };
 
 
-
-
 export const getBatchesWithCounts = async (req, res) => {
     try {
 
