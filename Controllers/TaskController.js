@@ -1,53 +1,82 @@
 import Task from '../Models/Task.js';
 import User from "../Models/User.js";
+import Batch from "../Models/batchModel.js";
 
-// adding new task
+// Adding new task
 export const addTask = async (req, res) => {
+
     const { assignedTo, title, description, startDate, endDate, status } = req.body;
+
     if (!assignedTo || !title || !description || !startDate || !endDate || !status) {
         return res.status(400).json({ error: "Please fill all the fields" });
     }
-    try {
-        //Checking if the user we are assigning to exists or not
-        const userExist = await User.findById(assignedTo);
 
-        if(!userExist){
+    try {
+        // 1. Check if user exists
+        const user = await User.findById(assignedTo);
+        if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
 
-        const assignTask = new Task({
-            assignedTo, title, description, startDate, endDate, status
-        });
 
-        const storeData = await assignTask.save();
-        console.log(storeData);
-        res.status(201).json({ storeData });
+        // 2. Create and save task
+        const newTask = new Task({
+            assignedTo,
+            title,
+            description,
+            startDate,
+            endDate,
+            status
+        });
+        const savedTask = await newTask.save();
+
+        // 3. Update user's batch
+        if (user.batch) {
+            await Batch.findByIdAndUpdate(user.batch, {
+                $inc: {
+                    allTasks: 1,
+                    ...(status === 'completed' ? { completedTasks: 1 } : {})
+                },
+                $push: {
+                    tasks: {
+                        taskId: savedTask._id,
+                        status: savedTask.status,
+                        assignedTo: savedTask.assignedTo
+                    }
+                }
+            }, { new: true });
+        } else {
+            console.warn(`User ${user.name} is not assigned to any batch`);
+        }
+
+        // Optional: Confirm update in logs
+        const updatedBatch = await Batch.findById(user.batch).populate('tasks.taskId');
+        console.log("Updated batch tasks:", updatedBatch?.tasks);
+
+        res.status(201).json({ storeData: savedTask });
+
     } catch (error) {
         console.error("Error adding task:", error);
         res.status(500).json({ error: "Internal Server Error" });
     }
+
 };
 
 
-//getting all the tasks
+// Get all tasks
 export const getTasks = async (req, res) => {
     try {
         const { userId } = req.params;
 
-        // Retrieve the user to check their role or admin status
         const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
 
         let tasksData;
-
-        // Check if the user is an admin
         if (user.isAdmin || user.role === 'admin') {
-            // Admin can see all tasks
             tasksData = await Task.find();
         } else {
-            // Regular users can see only their own tasks
             tasksData = await Task.find({ assignedTo: userId });
         }
 
@@ -58,7 +87,7 @@ export const getTasks = async (req, res) => {
 };
 
 
-//updating task 
+// Update task
 export const updateTask = async (req, res) => {
     try {
         const { id } = req.params;
@@ -78,20 +107,21 @@ export const updateTask = async (req, res) => {
     }
 };
 
+
+// Get task details
 export const getTaskDetails = async (req, res) => {
     const { id } = req.params;
     try {
-        console.log(`sending response ${id}`);
         const taskDetails = await Task.findById(id);
         res.status(200).json({ taskDetails });
     } catch (error) {
-        res.status(500).json({ message: "Failed to get task details!" });
         console.error("Error getting task details:", error);
+        res.status(500).json({ message: "Failed to get task details!" });
     }
-}
+};
 
 
-//deleting task
+// Delete task
 export const deleteTask = async (req, res) => {
     try {
         const { id } = req.params;
@@ -102,4 +132,3 @@ export const deleteTask = async (req, res) => {
         res.status(400).json(error);
     }
 };
-
