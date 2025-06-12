@@ -27,14 +27,18 @@ export const submitTaskCompletion = async (req, res) => {
   console.log("Inside task submission");
 
   try {
+
     const userId = req.user?._id || req.user?.id;
+
     if (!userId) {
       return res.status(403).json({ message: "Unauthorized. User info missing." });
     }
 
     const { taskId, comments } = req.body;
+
     if (!taskId || !comments) {
       return res.status(400).json({ error: "Task ID and comments are required." });
+
     }
 
     const fileData = req.files || {};
@@ -50,6 +54,7 @@ export const submitTaskCompletion = async (req, res) => {
     if (task.assignedTo.toString() !== userId.toString()) {
       return res.status(403).json({ error: "You are not assigned to this task." });
     }
+
 
     // Don't update if already completed
     if (task.status === 'completed') {
@@ -70,11 +75,13 @@ export const submitTaskCompletion = async (req, res) => {
     const taskCompletion = new TaskCompletion({
       user: userId,
       task: taskId,
+
       comments,
       file: uploadedFiles.file,
       image: uploadedFiles.image,
     });
     await taskCompletion.save();
+
 
     // Update the task status
     task.status = 'completed';
@@ -88,6 +95,7 @@ export const submitTaskCompletion = async (req, res) => {
     batch.completedTasks += 1;
     await batch.save();
 
+
     res.status(201).json({ message: "Task submitted successfully.", taskCompletion });
 
   } catch (error) {
@@ -95,8 +103,6 @@ export const submitTaskCompletion = async (req, res) => {
     res.status(500).json({ error: "An error occurred while submitting the task." });
   }
 };
-
-
 
 
 export const getTasksreports = async (req, res) => {

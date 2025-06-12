@@ -4,15 +4,15 @@ import {
   updateUser,
   deleteUser,
   uploadProfilePicture,
-} from "../Controllers/admincontroller.js";
-import {
-  createBatch,
+  getBatchProgress,
+    createBatch,
   getBatchesWithCounts,
-  getBatchById,
+ 
   deleteBatch,
   updateBatch,
   getBatchProgress,
 } from "../Controllers/batchController.js";
+
 
 const router = express.Router();
 
@@ -35,14 +35,10 @@ router.put("/update/:userid", uploadProfilePicture, updateUser);
 router.delete("/delete/:userid", deleteUser);
 
 
-// Route to edit certain batch
-router.put("/batches/:id", updateBatch);
-
-
-//Route to get certain batch info
-router.get("/batches/:id", getBatchById);
 
 // Route for deleting a batch
 router.delete("/batches/:id", deleteBatch);
+
+
 
 export default router;

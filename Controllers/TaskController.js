@@ -4,6 +4,7 @@ import Batch from "../Models/batchModel.js";
 
 // Adding new task
 export const addTask = async (req, res) => {
+
     const { assignedTo, title, description, startDate, endDate, status } = req.body;
 
     if (!assignedTo || !title || !description || !startDate || !endDate || !status) {
@@ -16,6 +17,8 @@ export const addTask = async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
+      }
+    });
 
         // 2. Create and save task
         const newTask = new Task({
@@ -57,6 +60,7 @@ export const addTask = async (req, res) => {
         console.error("Error adding task:", error);
         res.status(500).json({ error: "Internal Server Error" });
     }
+
 };
 
 
