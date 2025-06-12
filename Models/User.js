@@ -60,6 +60,11 @@ const UserSchema = new Schema({
 
     set: (value) => moment(value).format("YYYY-MM-DD"), // Only date, no time
   },
+  batch: {
+    type: Schema.Types.ObjectId,
+    ref: "Batch",
+    default: null,
+  },
 });
 
 export default mongoose.model("User", UserSchema);
