@@ -5,6 +5,7 @@ import cloudinary from "../config/cloudinaryConfig.js";
 import User from "../Models/User.js";
 import Batch from "../Models/batchModel.js";
 
+
 // Configure Cloudinary storage
 const storage = new CloudinaryStorage({
   cloudinary,
@@ -57,7 +58,9 @@ export const getAllUsers = async (req, res) => {
     if (users.length === 0) {
       return res.status(404).json({ message: "No users found" });
     }
-    res.status(200).json({ message: "Users fetched successfully", data: users });
+
+    res.status(200)
+      .json({ message: "Users fetched successfully", data: users });
   } catch (error) {
     console.error("Error fetching users:", error);
     res.status(500).json({ message: "Error fetching users", error: error.message });
