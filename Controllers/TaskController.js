@@ -17,8 +17,7 @@ export const addTask = async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
-      }
-    });
+
 
         // 2. Create and save task
         const newTask = new Task({
