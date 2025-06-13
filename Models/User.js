@@ -27,7 +27,7 @@ const UserSchema = new Schema({
   },
   role: {
     type: String,
-    enum: ["admin", "manager", "intern", "hr", "development", "hr", "research"],
+    enum: ["admin", "intern", "hr"],
     default: "intern",
   },
   isAdmin: {
@@ -44,6 +44,7 @@ const UserSchema = new Schema({
   },
   department: {
     type: String,
+    enum: ["research", "development", "hr"],
     default: "Not Assigned",
   },
   notifications: {
@@ -53,18 +54,42 @@ const UserSchema = new Schema({
   startDate: {
     type: Date,
     default: Date.now,
-    set: (value) => moment(value).format("YYYY-MM-DD"), // Only date, no time
+    set: (value) => moment(value).format("YYYY-MM-DD"),
   },
   EndDate: {
     type: Date,
-
-    set: (value) => moment(value).format("YYYY-MM-DD"), // Only date, no time
+    set: (value) => moment(value).format("YYYY-MM-DD"),
   },
+<<<<<<< Updated upstream
   batch: {
     type: Schema.Types.ObjectId,
     ref: "Batch",
     default: null,
   },
+=======
+  permissions: {
+    type: [
+      {
+        type: String,
+        enum: [
+          // Admin
+          "User Management",
+          "System Settings",
+          "Reports & Analytics",
+          "Send Notifications",
+          "Data Export",
+          // HR
+          "Employee Management",
+          "Leave Approval",
+          "HR Reports",
+          "Attendance Management",
+          "Recruitment"
+        ]
+      }
+    ],
+    default: []
+  }
+>>>>>>> Stashed changes
 });
 
 export default mongoose.model("User", UserSchema);

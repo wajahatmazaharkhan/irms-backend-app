@@ -73,7 +73,11 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
+<<<<<<< Updated upstream
 // Delete user
+=======
+// Function to delete a user
+>>>>>>> Stashed changes
 export const deleteUser = async (req, res) => {
   try {
     const { userid } = req.params;
