@@ -25,7 +25,7 @@ app.use("/uploads", express.static("projectimageuploads"));
 
 const corsOptions = {
 <<<<<<< Updated upstream
-  origin: ["https://www.scaleindia.org.in", "http://localhost:5173"],
+  origin: ["https://www.scaleindia.org.in"],
   credentials: true,
   methods: "GET, POST, DELETE, PATCH, HEAD, PUT, OPTIONS",
   allowedHeaders: [
