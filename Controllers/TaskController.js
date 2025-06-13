@@ -2,7 +2,12 @@ import Task from '../Models/Task.js';
 import User from "../Models/User.js";
 import Batch from "../Models/batchModel.js";
 
+<<<<<<< Updated upstream
 // Adding new task
+=======
+
+// adding new task
+>>>>>>> Stashed changes
 export const addTask = async (req, res) => {
 
     const { assignedTo, title, description, startDate, endDate, status } = req.body;
@@ -11,10 +16,14 @@ export const addTask = async (req, res) => {
         return res.status(400).json({ error: "Please fill all the fields" });
     }
 
+<<<<<<< Updated upstream
     try {
         // 1. Check if user exists
         const user = await User.findById(assignedTo);
         if (!user) {
+=======
+        if (!userExist) {
+>>>>>>> Stashed changes
             return res.status(404).json({ message: "User not found" });
         }
 
