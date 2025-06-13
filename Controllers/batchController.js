@@ -173,7 +173,7 @@ export const deleteBatch = async (req, res) => {
 export const updateBatch = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, startDate, EndDate, interns = [], hr = [] } = req.body;
+        const { name, startDate, EndDate, interns, hr } = req.body;
 
         // 1. Find existing batch
         const batch = await Batch.findById(id);
@@ -181,29 +181,31 @@ export const updateBatch = async (req, res) => {
             return res.status(404).json({ error: "Batch not found." });
         }
 
-        // 2. Resolve HR user IDs → HRIntern IDs
-        const hrInternIds = [];
+        // 2. Resolve HR user IDs → HRIntern IDs if hr is provided
+        let hrInternIds = batch.hr;
+        if (Array.isArray(hr)) {
+            hrInternIds = [];
+            for (const userId of hr) {
+                let hrIntern = await HRIntern.findOne({ hrId: userId });
 
-        for (const userId of hr) {
-            let hrIntern = await HRIntern.findOne({ hrId: userId });
+                if (!hrIntern) {
+                    hrIntern = await HRIntern.create({
+                        hrId: userId,
+                        internIds: [],
+                    });
+                    console.log(`Created HRIntern for userId ${userId}`);
+                }
 
-            if (!hrIntern) {
-                hrIntern = await HRIntern.create({
-                    hrId: userId,
-                    internIds: [],
-                });
-                console.log(`Created HRIntern for userId ${userId}`);
+                hrInternIds.push(hrIntern._id);
             }
-
-            hrInternIds.push(hrIntern._id);
         }
 
         // 3. Update fields conditionally
-        batch.name = name || batch.name;
-        batch.startDate = startDate ? new Date(startDate) : batch.startDate;
-        batch.EndDate = EndDate ? new Date(EndDate) : batch.EndDate;
-        batch.interns = Array.isArray(interns) ? interns : batch.interns;
-        batch.hr = hrInternIds.length ? hrInternIds : batch.hr;
+        if (name) batch.name = name;
+        if (startDate) batch.startDate = new Date(startDate);
+        if (EndDate) batch.EndDate = new Date(EndDate);
+        if ('interns' in req.body) batch.interns = interns; // preserves data if not passed
+        if ('hr' in req.body) batch.hr = hrInternIds;
 
         // 4. Save
         const updatedBatch = await batch.save();
@@ -220,6 +222,7 @@ export const updateBatch = async (req, res) => {
         });
     }
 };
+
 
 
 export const getBatchProgress = async (req, res) => {
