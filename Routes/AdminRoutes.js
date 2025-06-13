@@ -25,6 +25,7 @@ router.get("/allusers", getAllUsers);
 router.get("/batches/progress", getBatchProgress);
 
 // Route to get batches for admin
+// Previously not working route.
 router.get("/api/batches/summary", getBatchesWithCounts);
 
 // Route to create a batch
