@@ -13,9 +13,6 @@ const hrInternSchema = new mongoose.Schema({
       },
     ],
   });
-  
-  // Validation to ensure no more than 20 interns are added
-  
-  
+ 
   export default mongoose.model('HRIntern', hrInternSchema);
   
