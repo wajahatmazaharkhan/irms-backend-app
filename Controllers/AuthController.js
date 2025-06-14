@@ -10,13 +10,13 @@ const secretKey = process.env.JWT_SECRET;
 
 export const signup = async (req, res) => {
     try {
-        const { name, email, password, rpassword, mnumber,EndDate,department ,startDate} = req.body;
+        const { name, email, password, rpassword, mnumber, EndDate, department, startDate } = req.body;
 
         // Validate fields
         if (!name || !email || !password || !mnumber || !rpassword || !EndDate || !department || !startDate) {
             return res.status(400).json({ message: "All fields are required.", success: false });
         }
-        
+
         let role = "intern"; // Default role
         if (department === 'hr') {
             role = 'hr';
@@ -90,7 +90,7 @@ export const login = async (req, res) => {
         let token;
         try {
             token = jwt.sign(
-                { email: user.email, id: user._id, role: user.role },
+                { email: user.email, id: user._id, role: user.role, permissions: user.permissions },
                 secretKey,
                 { expiresIn: "30d" }
             );
@@ -108,7 +108,8 @@ export const login = async (req, res) => {
                 name: user.name,
                 email: user.email,
                 isAdmin: user.isAdmin,
-                role:user.role,
+                role: user.role,
+                permissions: user.permissions
             },
         });
         console.log(`${user.name} just logged in to IISPPR!`);
@@ -120,33 +121,33 @@ export const login = async (req, res) => {
 
 export const getUserById = async (req, res) => {
     try {
-      const { id } = req.params;
-  
-      // Check if the ID is a valid MongoDB ObjectId
-      if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(400).json({ message: "Invalid user ID" });
-      }
-  
-      // Query the database for the user by ID
-      const user = await User.findById(id);
-  
-      // If user is not found
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-  
-      // Return the user details excluding the password
-      res.status(200).json({
-        name: user.name,
-        mnumber: user.mnumber,
-        email: user.email,
-        role: user.role,
-        startDate: user.startDate,
-        isAdmin: user.isAdmin,
-      });
+        const { id } = req.params;
+
+        // Check if the ID is a valid MongoDB ObjectId
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: "Invalid user ID" });
+        }
+
+        // Query the database for the user by ID
+        const user = await User.findById(id);
+
+        // If user is not found
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Return the user details excluding the password
+        res.status(200).json({
+            name: user.name,
+            mnumber: user.mnumber,
+            email: user.email,
+            role: user.role,
+            startDate: user.startDate,
+            isAdmin: user.isAdmin,
+        });
     } catch (err) {
-      console.error(err);
-      res.status(500).json({ message: "Server error" });
+        console.error(err);
+        res.status(500).json({ message: "Server error" });
     }
-  };
-  
+};
+

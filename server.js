@@ -16,15 +16,27 @@ import taskSubmitRoutes from "./Routes/Tasksubmitionroutes.js";
 import notificationRouter from "./Routes/notificationRouter.js";
 import leaveRoutes from "./Routes/Leave.js";
 import HrInternAssociation from "./Routes/HrInternRoutes.js";
+import batchRouter from "./Routes/batchRouter.js";
 dotenv.config();
 
 const app = express();
 
-
 app.use("/uploads", express.static("projectimageuploads"));
 
 const corsOptions = {
-	origin: ["https://www.scaleindia.org.in", "http://localhost:5173"],
+<<<<<<< Updated upstream
+  origin: ["https://www.scaleindia.org.in"],
+  credentials: true,
+  methods: "GET, POST, DELETE, PATCH, HEAD, PUT, OPTIONS",
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "Access-Control-Allow-Credentials",
+    "cache-control",
+  ],
+  exposedHeaders: ["Authorization"],
+=======
+	origin: "https://www.scaleindia.org.in",
 	credentials: true,
 	methods: "GET, POST, DELETE, PATCH, HEAD, PUT, OPTIONS",
 	allowedHeaders: [
@@ -34,13 +46,13 @@ const corsOptions = {
 		"cache-control",
 	],
 	exposedHeaders: ["Authorization"],
+>>>>>>> Stashed changes
 };
 
-const newCors = { origin: "http://localhost:5173" }
+const newCors = { origin: "http://localhost:5173" };
 
 app.use(express.json());
 app.use(cors(corsOptions));
-
 
 app.use("/api/auth", router);
 app.use("/user", passwordUpdateRouter);
@@ -54,44 +66,45 @@ app.use("/", taskSubmitRoutes);
 app.use("/send", notificationRouter);
 app.use("/", leaveRoutes);
 app.use("/", HrInternAssociation);
+app.use("/api/batch", batchRouter);
 
 const responses = {
-	hello: "Hi! How can I assist you?",
-	goodbye: "Goodbye! Have a nice day.",
-	default: "Sorry, I didn't understand that.",
+  hello: "Hi! How can I assist you?",
+  goodbye: "Goodbye! Have a nice day.",
+  default: "Sorry, I didn't understand that.",
 };
 
 app.post("/chat", (req, res) => {
-	const userMessage = req.body.message ? req.body.message.toLowerCase() : "";
-	let botResponse = responses[userMessage] || responses.default;
-	res.json({ message: botResponse });
+  const userMessage = req.body.message ? req.body.message.toLowerCase() : "";
+  let botResponse = responses[userMessage] || responses.default;
+  res.json({ message: botResponse });
 });
 
 startCronJobs();
 
 app.get("/ping", (req, res) => {
-	res.send("PONG");
+  res.send("PONG");
 });
 
 app.get("/", (req, res) => {
-	res.send("IISPPR Server is up and running!");
+  res.send("IISPPR Server is up and running!");
 });
 
 const PORT = process.env.PORT || 4000;
 
 connectDB()
-	.then(() => {
-		app.listen(PORT, () => {
-			console.log(`Server is running on port: ${PORT}`);
-		});
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Server is running on port: ${PORT}`);
+    });
 
-		app.on("error", (error) => {
-			console.error(`Error: ${error}`);
-			throw error;
-		});
-	})
-	.catch((err) => {
-		console.error(`MongoDB connection failed: ${err}`);
-	});
+    app.on("error", (error) => {
+      console.error(`Error: ${error}`);
+      throw error;
+    });
+  })
+  .catch((err) => {
+    console.error(`MongoDB connection failed: ${err}`);
+  });
 
 export default app;

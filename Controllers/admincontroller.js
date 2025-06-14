@@ -5,7 +5,6 @@ import cloudinary from "../config/cloudinaryConfig.js";
 import User from "../Models/User.js";
 import Batch from "../Models/batchModel.js";
 
-
 // Configure Cloudinary storage
 const storage = new CloudinaryStorage({
   cloudinary,
@@ -44,10 +43,14 @@ export const updateUser = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    res.status(200).json({ message: "User updated successfully", data: updatedUser });
+    res
+      .status(200)
+      .json({ message: "User updated successfully", data: updatedUser });
   } catch (error) {
     console.error("Error updating user:", error);
-    res.status(500).json({ message: "Error updating user", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error updating user", error: error.message });
   }
 };
 
@@ -59,15 +62,22 @@ export const getAllUsers = async (req, res) => {
       return res.status(404).json({ message: "No users found" });
     }
 
-    res.status(200)
+    res
+      .status(200)
       .json({ message: "Users fetched successfully", data: users });
   } catch (error) {
     console.error("Error fetching users:", error);
-    res.status(500).json({ message: "Error fetching users", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error fetching users", error: error.message });
   }
 };
 
+<<<<<<< Updated upstream
 // Delete user
+=======
+// Function to delete a user
+>>>>>>> Stashed changes
 export const deleteUser = async (req, res) => {
   try {
     const { userid } = req.params;
@@ -79,14 +89,16 @@ export const deleteUser = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    res.status(200).json({ message: "User deleted successfully", data: deletedUser });
+    res
+      .status(200)
+      .json({ message: "User deleted successfully", data: deletedUser });
   } catch (error) {
     console.error("Error deleting user:", error);
-    res.status(500).json({ message: "Error deleting user", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error deleting user", error: error.message });
   }
 };
-
-
 
 export const createBatch = async (req, res) => {
   try {
@@ -104,14 +116,17 @@ export const createBatch = async (req, res) => {
 
     if (existingBatch) {
       return res.status(409).json({
-        error: "A batch with the same name, start date, and end date already exists.",
+        error:
+          "A batch with the same name, start date, and end date already exists.",
       });
     }
 
     const newBatch = new Batch({ name, startDate, endDate, interns, hr });
     const savedBatch = await newBatch.save();
 
-    const internIds = (interns || []).filter(id => mongoose.Types.ObjectId.isValid(id));
+    const internIds = (interns || []).filter((id) =>
+      mongoose.Types.ObjectId.isValid(id)
+    );
 
     if (internIds.length > 0) {
       const result = await User.updateMany(
@@ -119,32 +134,41 @@ export const createBatch = async (req, res) => {
         { $set: { batch: savedBatch._id } }
       );
 
-      console.log(`✅ Updated ${result.modifiedCount} interns with batch ID ${savedBatch._id}`);
+      console.log(
+        `✅ Updated ${result.modifiedCount} interns with batch ID ${savedBatch._id}`
+      );
     }
 
     return res.status(201).json({
       message: "Batch created successfully",
-      data: savedBatch
+      data: savedBatch,
     });
   } catch (error) {
     console.error("❌ Error creating batch:", error);
     return res.status(500).json({
       error: "Internal Server Error",
-      details: error.message
+      details: error.message,
     });
   }
 };
 
 // Get all batches with counts
 export const getBatchesWithCounts = async (req, res) => {
+  console.log("== getBatchesWithCounts controller invoked ==");
+
   try {
+    // Sanity check: confirm DB is accessible
     const batches = await Batch.find()
       .populate("interns", "_id")
       .populate("hr");
 
+    console.log(`Fetched ${batches.length} batches from DB.`);
+
     const result = batches.map((batch, index) => {
       console.log(`\n== Batch ${index + 1}: ${batch.name} ==`);
-      console.log("Populated HR array:", batch.hr);
+      console.log("Batch ID:", batch._id);
+      console.log("Populated interns:", batch.interns);
+      console.log("Populated HR:", batch.hr);
 
       return {
         _id: batch._id,
@@ -156,9 +180,11 @@ export const getBatchesWithCounts = async (req, res) => {
       };
     });
 
+    console.log("Returning response with result:", result);
+
     return res.status(200).json(result);
   } catch (error) {
-    console.error("Error fetching batches:", error);
+    console.error("Error in getBatchesWithCounts:", error);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
@@ -169,11 +195,11 @@ export const getBatchProgress = async (req, res) => {
     const batches = await Batch.find()
       .populate({
         path: "tasks.taskId",
-        select: "title description"
+        select: "title description",
       })
       .populate({
         path: "tasks.assignedTo",
-        select: "name email"
+        select: "name email",
       });
 
     const progressData = batches.map((batch) => {
@@ -181,14 +207,19 @@ export const getBatchProgress = async (req, res) => {
 
       // 🔄 Dynamic counts
       const allTasks = taskList.length;
-      const completedTasks = taskList.filter(task => task.status === "completed").length;
+      const completedTasks = taskList.filter(
+        (task) => task.status === "completed"
+      ).length;
       const progress = allTasks > 0 ? (completedTasks / allTasks) * 100 : 0;
 
       // ⏱️ Status breakdown
-      const taskStats = taskList.reduce((acc, task) => {
-        acc[task.status] = (acc[task.status] || 0) + 1;
-        return acc;
-      }, { pending: 0, completed: 0 });
+      const taskStats = taskList.reduce(
+        (acc, task) => {
+          acc[task.status] = (acc[task.status] || 0) + 1;
+          return acc;
+        },
+        { pending: 0, completed: 0 }
+      );
 
       return {
         _id: batch._id,
@@ -199,7 +230,7 @@ export const getBatchProgress = async (req, res) => {
         completedTasks,
         progress: parseFloat(progress.toFixed(2)),
         taskStats,
-        tasks: taskList.map(task => ({
+        tasks: taskList.map((task) => ({
           taskId: task.taskId,
           title: task.taskId?.title,
           description: task.taskId?.description,
@@ -208,8 +239,8 @@ export const getBatchProgress = async (req, res) => {
             _id: task.assignedTo?._id,
             name: task.assignedTo?.name,
             email: task.assignedTo?.email,
-          }
-        }))
+          },
+        })),
       };
     });
 
@@ -219,7 +250,6 @@ export const getBatchProgress = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
 
 // Delete a batch
 export const deleteBatch = async (req, res) => {
@@ -231,10 +261,14 @@ export const deleteBatch = async (req, res) => {
       return res.status(404).json({ error: "Batch not found." });
     }
 
-    return res.status(200).json({ message: "Batch deleted successfully.", data: deletedBatch });
+    return res
+      .status(200)
+      .json({ message: "Batch deleted successfully.", data: deletedBatch });
   } catch (error) {
     console.error("Error deleting batch:", error);
-    return res.status(500).json({ error: "Internal Server Error", details: error.message });
+    return res
+      .status(500)
+      .json({ error: "Internal Server Error", details: error.message });
   }
 };
 
@@ -260,9 +294,13 @@ export const updateBatchWithUser = async (req, res) => {
     batch.interns.push(userId);
     await batch.save();
 
-    return res.status(200).json({ message: "User added to batch successfully", data: batch });
+    return res
+      .status(200)
+      .json({ message: "User added to batch successfully", data: batch });
   } catch (error) {
     console.error("Error adding user to batch:", error);
-    return res.status(500).json({ error: "Internal Server Error", details: error.message });
+    return res
+      .status(500)
+      .json({ error: "Internal Server Error", details: error.message });
   }
 };
