@@ -1,5 +1,5 @@
 import express from "express";
-import { getBatchesWithCounts } from "../Controllers/admincontroller.js";
+import { getBatchesWithCounts } from "../Controllers/batchController.js";
 
 const batchRouter = express.Router();
 

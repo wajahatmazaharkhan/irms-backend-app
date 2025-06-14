@@ -60,13 +60,11 @@ const UserSchema = new Schema({
     type: Date,
     set: (value) => moment(value).format("YYYY-MM-DD"),
   },
-<<<<<<< Updated upstream
   batch: {
     type: Schema.Types.ObjectId,
     ref: "Batch",
     default: null,
   },
-=======
   permissions: {
     type: [
       {
@@ -89,7 +87,6 @@ const UserSchema = new Schema({
     ],
     default: []
   }
->>>>>>> Stashed changes
 });
 
 export default mongoose.model("User", UserSchema);
