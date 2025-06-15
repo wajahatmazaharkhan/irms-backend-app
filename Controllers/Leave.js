@@ -39,6 +39,18 @@ export const postLeaveApplication = async (req, res) => {
   }
 };
 
+// GET route to fetch leave applications of the logged-in intern
+export const getOwnLeaveApplications = async (req, res) => {
+  try {
+    const internId = req.user._id;
+    const leaves = await Leave.find({ internid: internId }).sort({ createdAt: -1 });
+    res.status(200).json({ leaves });
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching your leaves" });
+  }
+};
+
+
 
 // GET route to fetch all leave applications for admin
 export const getAllLeaveApplications = async (req, res) => {
