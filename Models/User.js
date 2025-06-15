@@ -60,28 +60,39 @@ const UserSchema = new Schema({
     type: Date,
     set: (value) => moment(value).format("YYYY-MM-DD"),
   },
+
   batch: {
     type: Schema.Types.ObjectId,
     ref: "Batch",
     default: null,
   },
+
+  resetPasswordOtp: {
+    type: String,
+    default: null
+  },
+  resetPasswordExpires: {
+    type: Date,
+    default: null
+  },
+
+
   permissions: {
     type: [
       {
         type: String,
         enum: [
           // Admin
-          "User Management",
-          "System Settings",
-          "Reports & Analytics",
-          "Send Notifications",
-          "Data Export",
+          "user_management",
+          "system_settings",
+          "reports",
+          "notifications",
+          "data_export",
           // HR
-          "Employee Management",
-          "Leave Approval",
-          "HR Reports",
-          "Attendance Management",
-          "Recruitment"
+          "employee_management",
+          "leave_approval",
+          "attendance",
+          "recruitment"
         ]
       }
     ],

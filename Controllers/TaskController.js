@@ -3,8 +3,6 @@ import User from "../Models/User.js";
 import Batch from "../Models/batchModel.js";
 
 
-// Adding new task
-
 export const addTask = async (req, res) => {
     const { assignedTo, title, description, startDate, endDate, status } = req.body;
 
@@ -18,11 +16,13 @@ export const addTask = async (req, res) => {
         // 2. Find user
         const user = await User.findById(assignedTo);
         if (!user) {
+
             console.warn(`User with ID ${assignedTo} not found.`);
             return res.status(404).json({ message: "User not found" });
         }
 
         // 3. Create and save task
+
         const newTask = new Task({
             assignedTo,
             title,

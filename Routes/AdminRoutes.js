@@ -13,6 +13,7 @@ import {
   deleteBatch,
   getBatchById,
   updateBatch,
+  getAvailableInterns
 } from "../Controllers/batchController.js";
 
 
@@ -20,6 +21,9 @@ const router = express.Router();
 
 // Route to fetch all users
 router.get("/allusers", getAllUsers);
+
+// Route to get all available interns 
+router.get("/available-interns", getAvailableInterns);
 
 // Route to fetch batch progress
 router.get("/batches/progress", getBatchProgress);
