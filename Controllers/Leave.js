@@ -66,6 +66,19 @@ export const getAllLeaveApplications = async (req, res) => {
   }
 };
 
+
+export const getOwnLeaveApplications = async (req, res) => {
+  try {
+    console.log("Authenticated user ID:", req.user._id);
+    const leaves = await Leave.find({ internid: req.user._id }).sort({ createdAt: -1 });
+    res.status(200).json({ leaves });
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching your leaves" });
+  }
+};
+
+
+
 // PUT route to update leave application status by admin
 export const updateLeaveStatus = async (req, res) => {
   const leaveId = req.params.id;
