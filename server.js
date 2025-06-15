@@ -25,7 +25,9 @@ app.use("/uploads", express.static("projectimageuploads"));
 
 const corsOptions = {
 
+
   origin: ["https://www.scaleindia.org.in"],
+
   credentials: true,
   methods: "GET, POST, DELETE, PATCH, HEAD, PUT, OPTIONS",
   allowedHeaders: [
@@ -35,7 +37,6 @@ const corsOptions = {
     "cache-control",
   ],
   exposedHeaders: ["Authorization"],
-
 
 };
 

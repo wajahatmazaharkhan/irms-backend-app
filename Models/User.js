@@ -66,6 +66,7 @@ const UserSchema = new Schema({
     ref: "Batch",
     default: null,
   },
+
   resetPasswordOtp: {
     type: String,
     default: null
@@ -74,6 +75,7 @@ const UserSchema = new Schema({
     type: Date,
     default: null
   },
+
 
   permissions: {
     type: [
