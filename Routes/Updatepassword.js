@@ -1,9 +1,11 @@
 import express from 'express';
-import { userPassUpdate } from '../Controllers/Passwordcontroller.js';
+import { sendResetOtp, verifyResetOtp, resetPassword } from '../Controllers/Passwordcontroller.js';
 
 const router = express.Router();
 
 // Route for updating password
-router.post('/updatepassword', userPassUpdate);
+router.post('/sendresetotp', sendResetOtp);
+router.post('/verifyresetotp', verifyResetOtp);
+router.post('/resetpassword', resetPassword);
 
 export default router;
