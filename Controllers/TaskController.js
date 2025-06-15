@@ -2,33 +2,27 @@ import Task from '../Models/Task.js';
 import User from "../Models/User.js";
 import Batch from "../Models/batchModel.js";
 
-<<<<<<< Updated upstream
-// Adding new task
-=======
 
-// adding new task
->>>>>>> Stashed changes
 export const addTask = async (req, res) => {
-
     const { assignedTo, title, description, startDate, endDate, status } = req.body;
 
+    // 1. Validate input
     if (!assignedTo || !title || !description || !startDate || !endDate || !status) {
+        console.warn("Validation failed: Missing required fields.");
         return res.status(400).json({ error: "Please fill all the fields" });
     }
 
-<<<<<<< Updated upstream
     try {
-        // 1. Check if user exists
+        // 2. Find user
         const user = await User.findById(assignedTo);
         if (!user) {
-=======
-        if (!userExist) {
->>>>>>> Stashed changes
+
+            console.warn(`User with ID ${assignedTo} not found.`);
             return res.status(404).json({ message: "User not found" });
         }
 
+        // 3. Create and save task
 
-        // 2. Create and save task
         const newTask = new Task({
             assignedTo,
             title,
@@ -37,39 +31,49 @@ export const addTask = async (req, res) => {
             endDate,
             status
         });
-        const savedTask = await newTask.save();
 
-        // 3. Update user's batch
+        const savedTask = await newTask.save();
+        console.log(`Task "${title}" assigned to ${user.name} (ID: ${user._id}) saved with ID ${savedTask._id}`);
+
+        // 4. Update user's batch
         if (user.batch) {
-            await Batch.findByIdAndUpdate(user.batch, {
-                $inc: {
-                    allTasks: 1,
-                    ...(status === 'completed' ? { completedTasks: 1 } : {})
-                },
-                $push: {
-                    tasks: {
-                        taskId: savedTask._id,
-                        status: savedTask.status,
-                        assignedTo: savedTask.assignedTo
+            const batchUpdate = await Batch.findByIdAndUpdate(
+                user.batch,
+                {
+                    $inc: {
+                        allTasks: 1,
+                        ...(status === 'completed' ? { completedTasks: 1 } : {})
+                    },
+                    $push: {
+                        tasks: {
+                            taskId: savedTask._id,
+                            status: savedTask.status,
+                            assignedTo: savedTask.assignedTo
+                        }
                     }
-                }
-            }, { new: true });
+                },
+                { new: true }
+            ).populate("tasks.taskId");
+
+            if (batchUpdate) {
+                console.log(`Batch "${batchUpdate.name}" updated. Total Tasks: ${batchUpdate.allTasks}, Completed: ${batchUpdate.completedTasks}`);
+            } else {
+                console.warn(`Batch with ID ${user.batch} not found during task update.`);
+            }
+
         } else {
-            console.warn(`User ${user.name} is not assigned to any batch`);
+            console.warn(`User "${user.name}" (ID: ${user._id}) is not assigned to any batch.`);
         }
 
-        // Optional: Confirm update in logs
-        const updatedBatch = await Batch.findById(user.batch).populate('tasks.taskId');
-        console.log("Updated batch tasks:", updatedBatch?.tasks);
-
+        // 5. Return response
         res.status(201).json({ storeData: savedTask });
 
     } catch (error) {
         console.error("Error adding task:", error);
         res.status(500).json({ error: "Internal Server Error" });
     }
-
 };
+
 
 
 // Get all tasks
@@ -109,7 +113,6 @@ export const updateTask = async (req, res) => {
             return res.status(400).json({ error: "Task not found" });
         }
 
-        console.log(updatedTask);
         res.status(200).json({ updatedTask });
     } catch (error) {
         res.status(400).json(error);
