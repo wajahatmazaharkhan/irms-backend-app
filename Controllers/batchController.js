@@ -370,3 +370,55 @@ export const getBatchProgress = async (req, res) => {
     }
 };
 
+
+
+
+export const getByHr = async (req, res) => {
+  try {
+    const { hrId } = req.params;
+
+    // Validate the HR ID
+    if (!mongoose.Types.ObjectId.isValid(hrId)) {
+      return res.status(400).json({ error: "Invalid HR ID." });
+    }
+
+    // Finding the HRIntern document for the given HR
+    const hrIntern = await HRIntern.findOne({ hrId }).lean();
+
+    // Finding batches where this HRIntern document is referenced in the hr array
+    const batches = await Batch.find({ hr: hrIntern })
+      .populate("interns", "name email role _id")
+      .populate({
+        path: "hr",
+        populate: {
+          path: "hrId",
+          model: "User",
+          select: "name email role _id",
+        },
+      });
+
+    const response = batches.map((batch) => {
+        const managedInterns = batch.interns || [];
+
+      return {
+        _id: batch._id,
+        name: batch.name,
+        startDate: batch.startDate,
+        endDate: batch.endDate,
+        hr: batch.hr.map((h) => ({
+          _id: h._id,
+          hrId: h.hrId,
+        })),
+        interns: managedInterns,
+        totalManagedInterns: managedInterns.length,
+        totalHR: batch.hr.length, 
+      };
+    });
+
+    // Send the response
+    res.status(200).json(response);
+  } catch (error) {
+    console.error("Error fetching batches by HR:", error);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+};
