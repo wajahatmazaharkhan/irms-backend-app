@@ -74,6 +74,7 @@ export const getAllUsers = async (req, res) => {
 };
 
 
+
 // Function to delete a user
 
 export const deleteUser = async (req, res) => {

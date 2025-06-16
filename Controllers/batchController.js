@@ -88,18 +88,6 @@ export const createBatch = async (req, res) => {
 export const getBatchesWithCounts = async (req, res) => {
     try {
 
-
-        // const rawBatches = await Batch.find().lean();
-        // console.log(rawBatches.map(b => ({
-        //     name: b.name,
-        //     hrRaw: b.hr,  // Should be array of ObjectIds
-        // })));
-
-
-        // const hrDocs = await HRIntern.find().lean();
-        // console.log("HRInterns:", hrDocs.map(h => h._id.toString()));
-
-
         const batches = await Batch.find()
             .populate("interns", "_id")
             .populate({
@@ -318,14 +306,6 @@ export const updateBatch = async (req, res) => {
     }
 };
 
-
-
-
-
-
-
-
-
 export const getBatchProgress = async (req, res) => {
     try {
         const batches = await Batch.find()
@@ -370,8 +350,105 @@ export const getBatchProgress = async (req, res) => {
     }
 };
 
+// GET /batches/available-interns
+
+export const getAvailableInterns = async (req, res) => {
+  try {
+    // Step 1: Get all batches
+    const existingBatches = await Batch.find({}, "_id");
+    const existingBatchIds = existingBatches.map(b => b._id.toString());
+
+    // Step 2: Get interns where batch is:
+    // - null
+    // - or not in existingBatchIds (after converting user.batch to string)
+    const allInterns = await User.aggregate([
+		  { $match: { role: "intern" } },
+		  {
+			$project: {
+			  id: "$_id",      // Alias _id to id
+			  _id: 0,          // Exclude original _id
+			  name: 1,
+			  email: 1,
+			  batch: 1,
+			  role: 1,
+			},
+		  },
+		]);
 
 
+    const availableInterns = allInterns.filter(intern =>
+      intern.batch === null ||
+      !existingBatchIds.includes(intern.batch?.toString())
+    );
+
+    res.status(200).json({
+      message: "Available interns fetched successfully",
+      data: availableInterns
+    });
+
+  } catch (error) {
+    console.error("Error fetching available interns:", error);
+    res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message
+    });
+  }
+};
+
+
+export const getBatchesWithHrAndInternIDs = async (req, res) => {
+  try {
+    const batches = await Batch.find()
+      .populate({
+        path: "interns",
+        select: "_id name email", // Added name and email for more useful data
+      })
+      .populate({
+        path: "hr",
+        populate: {
+          path: "hrId",
+          model: "User",
+          select: "name email role",
+        },
+      })
+      .lean(); // Using lean() for better performance
+
+    const result = batches.map((batch) => ({
+      _id: batch._id,
+      name: batch.name,
+      startDate: batch.startDate,
+      endDate: batch.endDate, // Fixed capitalization of EndDate
+      interns:
+        batch.interns?.map((intern) => ({
+          _id: intern._id,
+          name: intern.name,
+          email: intern.email,
+        })) || [],
+      hr:
+        batch.hr?.map((hr) => ({
+          _id: hr.hrId?._id,
+          name: hr.hrId?.name,
+          email: hr.hrId?.email,
+          role: hr.hrId?.role,
+        })) || [],
+      totalInterns: batch.interns?.length || 0,
+      totalHR: batch.hr?.filter((h) => h.hrId)?.length || 0,
+    }));
+
+    return res.status(200).json({
+      success: true,
+      data: result,
+      message: "Batches fetched successfully",
+    });
+  } catch (error) {
+    console.error("Error fetching batches:", error);
+    return res.status(500).json({
+      success: false,
+      error: "Failed to fetch batches",
+      message: error.message,
+    });
+  }
+};
 
 export const getByHr = async (req, res) => {
   try {
@@ -421,4 +498,4 @@ export const getByHr = async (req, res) => {
     console.error("Error fetching batches by HR:", error);
     res.status(500).json({ error: "Internal Server Error", details: error.message });
   }
-};
+};  
