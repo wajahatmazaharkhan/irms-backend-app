@@ -157,10 +157,37 @@ const getAttendance = async (req, res) => {
 
 
 
+const deleteTodayAttendance = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    if (!userId) {
+      return res.status(400).json({ success: false, message: "User ID is required" });
+    }
+
+    const today = new Date();
+    const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0, 0);
+    const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
+
+    const deleted = await Attendance.findOneAndDelete({
+      userId,
+      date: { $gte: startOfDay, $lt: endOfDay },
+    });
+
+    if (!deleted) {
+      return res.status(404).json({ success: false, message: "No attendance found for today." });
+    }
+
+    return res.status(200).json({ success: true, message: "Attendance deleted successfully." });
+  } catch (error) {
+    console.error("Error deleting attendance:", error);
+    return res.status(500).json({ success: false, message: "Internal server error." });
+  }
+};
 
 
 export {
     markAttendance,
     getAttendance,
-    getAttedanceByid
+    getAttedanceByid,
+    deleteTodayAttendance,
 };
