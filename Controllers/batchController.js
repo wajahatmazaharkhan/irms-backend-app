@@ -306,14 +306,6 @@ export const updateBatch = async (req, res) => {
     }
 };
 
-
-
-
-
-
-
-
-
 export const getBatchProgress = async (req, res) => {
     try {
         const batches = await Batch.find()
@@ -404,4 +396,57 @@ export const getAvailableInterns = async (req, res) => {
 };
 
 
+export const getBatchesWithHrAndInternIDs = async (req, res) => {
+  try {
+    const batches = await Batch.find()
+      .populate({
+        path: "interns",
+        select: "_id name email", // Added name and email for more useful data
+      })
+      .populate({
+        path: "hr",
+        populate: {
+          path: "hrId",
+          model: "User",
+          select: "name email role",
+        },
+      })
+      .lean(); // Using lean() for better performance
+
+    const result = batches.map((batch) => ({
+      _id: batch._id,
+      name: batch.name,
+      startDate: batch.startDate,
+      endDate: batch.endDate, // Fixed capitalization of EndDate
+      interns:
+        batch.interns?.map((intern) => ({
+          _id: intern._id,
+          name: intern.name,
+          email: intern.email,
+        })) || [],
+      hr:
+        batch.hr?.map((hr) => ({
+          _id: hr.hrId?._id,
+          name: hr.hrId?.name,
+          email: hr.hrId?.email,
+          role: hr.hrId?.role,
+        })) || [],
+      totalInterns: batch.interns?.length || 0,
+      totalHR: batch.hr?.filter((h) => h.hrId)?.length || 0,
+    }));
+
+    return res.status(200).json({
+      success: true,
+      data: result,
+      message: "Batches fetched successfully",
+    });
+  } catch (error) {
+    console.error("Error fetching batches:", error);
+    return res.status(500).json({
+      success: false,
+      error: "Failed to fetch batches",
+      message: error.message,
+    });
+  }
+};
 
