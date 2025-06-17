@@ -91,24 +91,29 @@ const deleteNotification = async (req, res) => {
 
 const notifyAll = async (req, res) => {
     const { status, message } = req.body;
-    const users = await User.find();
+
     try {
-        users.forEach(user => {
+        const users = await User.find();
+
+        for (const user of users) {
             const notification = new Notification({
                 userId: user._id,
                 message,
                 type: status
             });
-            notification.save();
-            user.notifications.push(notification._id);
-            user.save();
-        });
+            await notification.save();
+
+            await User.findByIdAndUpdate(user._id, {
+                $push: { notifications: notification._id }
+            });
+        }
+
         res.status(200).json({ message: "Notifications sent successfully!" });
         console.log("Notifications sent successfully!");
     } catch (error) {
         res.status(500).json({ message: "Failed to send notifications!" });
         console.error("Error sending notifications:", error);
     }
-}
+};
 
 export { sendNotification, sendNotificationToSingleUser, getNotifcation, deleteNotification, notifyAll };
