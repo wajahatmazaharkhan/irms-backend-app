@@ -138,8 +138,6 @@ const getAttendance = async (req, res) => {
         // Set the end of the day (23:59:59.999) in local time
         const endOfDay = new Date(today.setHours(23, 59, 59, 999));
 
-        console.log("Query Range:", startOfDay, endOfDay);
-
 
         // Find records for the current date
         const records = await Attendance.find({
