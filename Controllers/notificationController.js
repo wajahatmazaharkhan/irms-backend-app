@@ -94,17 +94,20 @@ const sendNotificationToSingleUser = async (req, res) => {
 }
 
 const getNotifications = async (req, res) => {
-  try {
-    const userId = req.user._id;
+    // Get userId from query parameters
+    const { userId } = req.body;
 
-    const notifications = await Notification.find({ userId }).sort({ createdAt: -1 });
+    try {
+        // Fetch notifications for the given userId
+        const notifications = await User.findById(userId).populate("notifications");
+        res.status(200).json({ notifications });
+    } catch (error) {
+        // Handle errors
+        res.status(500).json({ message: "Failed to get notifications!" });
+        console.error("Error getting notifications:", error);
+    }
+}
 
-    res.status(200).json({ notifications });
-  } catch (error) {
-    console.error("Error fetching notifications:", error);
-    res.status(500).json({ message: "Failed to fetch notifications." });
-  }
-};
 const deleteNotification = async (req, res) => {
     const { notificationId } = req.query;
     const { userId } = req.query;
@@ -127,45 +130,28 @@ const deleteNotification = async (req, res) => {
 
 const notifyAll = async (req, res) => {
     const { status, message } = req.body;
-    const sender = req.user;
 
     try {
-        let targetUsers = [];
+        const users = await User.find();
 
-        if (sender.role === 'Admin') {
-            // Admin can notify everyone
-            targetUsers = await User.find();
-        } else if (sender.role === 'HR') {
-            // HR can notify only assigned interns
-            const hrInternData = await HrInternAssociation.findOne({ hrId: sender._id });
-
-            if (!hrInternData || !hrInternData.internIds.length) {
-                return res.status(403).json({ message: "No interns assigned to this HR." });
-            }
-
-            targetUsers = await User.find({ _id: { $in: hrInternData.internIds } });
-        } else {
-            // Other roles not allowed
-            return res.status(403).json({ message: "Unauthorized: Only Admins and HRs can send notifications." });
-        }
-
-        // Send notifications to each user
-        for (const user of targetUsers) {
+        for (const user of users) {
             const notification = new Notification({
                 userId: user._id,
                 message,
                 type: status
             });
-
             await notification.save();
-            user.notifications.push(notification._id);
-            await user.save();
+
+            await User.findByIdAndUpdate(user._id, {
+                $push: { notifications: notification._id }
+            });
         }
 
-        res.status(200).json({ message: "Notifications sent to all users successfully!" });
+        res.status(200).json({ message: "Notifications sent successfully!" });
+        console.log("Notifications sent successfully!");
     } catch (error) {
-        console.error("Error sending notifications to all users:", error);
-        res.status(500).json({ message: "Failed to send notifications to all users!" });
+        res.status(500).json({ message: "Failed to send notifications!" });
+        console.error("Error sending notifications:", error);
     }
 };
 

@@ -5,7 +5,7 @@ const router = express.Router();
 
 // Route for sending notifications
 router.post('/notification', ensureAuthenticated, sendNotification);
-router.post('/notify-all', ensureAuthenticated, notifyAll);
+router.post('/notify-all', notifyAll);
 router.post('/notify-single', ensureAuthenticated, sendNotificationToSingleUser);
 
 
