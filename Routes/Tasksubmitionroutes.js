@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.post('/submitTask', ensureAuthenticated, upload.fields([{ name: 'file' }, { name: 'image' }]), submitTaskCompletion);
 router.get('/getsubmitedtasks', getTasksreports);
-router.get('/get-notifications', ensureAuthenticated, getNotifications);
+router.post('/get-notifications', getNotifications);
 router.delete('/delete-notification', ensureAuthenticated, deleteNotification);
 
 export default router;

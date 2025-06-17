@@ -94,17 +94,20 @@ const sendNotificationToSingleUser = async (req, res) => {
 }
 
 const getNotifications = async (req, res) => {
-  try {
-    const userId = req.user._id;
+    // Get userId from query parameters
+    const { userId } = req.body;
 
-    const notifications = await Notification.find({ userId }).sort({ createdAt: -1 });
+    try {
+        // Fetch notifications for the given userId
+        const notifications = await User.findById(userId).populate("notifications");
+        res.status(200).json({ notifications });
+    } catch (error) {
+        // Handle errors
+        res.status(500).json({ message: "Failed to get notifications!" });
+        console.error("Error getting notifications:", error);
+    }
+}
 
-    res.status(200).json({ notifications });
-  } catch (error) {
-    console.error("Error fetching notifications:", error);
-    res.status(500).json({ message: "Failed to fetch notifications." });
-  }
-};
 const deleteNotification = async (req, res) => {
     const { notificationId } = req.query;
     const { userId } = req.query;
