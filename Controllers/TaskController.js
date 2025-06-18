@@ -4,10 +4,10 @@ import Batch from "../Models/batchModel.js";
 
 
 export const addTask = async (req, res) => {
-    const { assignedTo, title, description, startDate, endDate, status } = req.body;
+    const { assignedTo, title, description, startDate, endDate, status,type} = req.body;
 
     // 1. Validate input
-    if (!assignedTo || !title || !description || !startDate || !endDate || !status) {
+    if (!assignedTo || !title || !description || !startDate || !endDate || !status ||!type) {
         console.warn("Validation failed: Missing required fields.");
         return res.status(400).json({ error: "Please fill all the fields" });
     }
@@ -29,7 +29,8 @@ export const addTask = async (req, res) => {
             description,
             startDate,
             endDate,
-            status
+            status,
+			taskType:type,
         });
 
         const savedTask = await newTask.save();
