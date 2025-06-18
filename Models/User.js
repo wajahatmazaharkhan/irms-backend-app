@@ -97,7 +97,13 @@ const UserSchema = new Schema({
       }
     ],
     default: []
-  }
+  },
+ 
+  totalPoints: {
+	  type: Number,
+	  default: 0
+	}
+
 });
 
 export default mongoose.model("User", UserSchema);

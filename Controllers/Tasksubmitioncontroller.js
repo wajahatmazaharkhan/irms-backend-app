@@ -120,3 +120,71 @@ export const getTasksreports = async (req, res) => {
 // Export the Multer upload function for use in routes
 export { upload };
 
+
+
+
+export const reviewTaskSubmission = async (req, res) => {
+  try {
+    const { userId, taskId, status } = req.body;
+
+    if (!userId || !taskId || !status) {
+      console.warn("Missing required fields.");
+      return res.status(400).json({ error: "userId, taskId, and status are required." });
+    }
+
+    const task = await Task.findById(taskId);
+    const user = await User.findById(userId);
+    const submission = await TaskCompletion.findOne({ task: taskId, user: userId });
+
+    if (!task || !user || !submission) {
+      return res.status(404).json({ error: "Task, user, or submission not found." });
+    }
+    if (submission.reviewed) {
+      console.warn("Submission already reviewed.");
+      return res.status(400).json({ error: "This submission has already been reviewed." });
+    }
+
+    const submittedOn = submission.createdAt;
+    const deadline = task.endDate;
+    const isBeforeDeadline = new Date(submittedOn) <= new Date(deadline);
+
+    let rankChange = 0;
+
+    if (status === "Accepted" && isBeforeDeadline) {
+      if (task.taskType === "Technical") {
+        rankChange = 1;
+      } else if (task.taskType === "Social") {
+        rankChange = 1;
+      }
+    } else if ((status === "Rejected" && task.taskType === "Social")||(!isBeforeDeadline && task.taskType === "Social")) {
+      rankChange = -1;
+    } else {
+      console.log("No rank change criteria matched.");
+    }
+
+    if (rankChange !== 0) {
+      user.totalPoints = (user.totalPoints || 0) + rankChange;
+      await user.save();
+      console.log(`User rank updated to ${user.totalPoints}`);
+    }
+
+    submission.reviewed = true;
+    submission.reviewStatus = status;
+    await submission.save();
+
+    if (status === "Accepted") {
+      task.status = "completed";
+      await task.save();
+      console.log("Task status updated to completed.");
+    }
+
+    res.status(200).json({
+      message: `Task submission ${status.toLowerCase()} and user rank ${rankChange >= 0 ? "increased" : "decreased"} by ${Math.abs(rankChange)}.`,
+    });
+
+  } catch (error) {
+    console.error("Error reviewing task:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+

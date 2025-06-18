@@ -25,7 +25,16 @@ const TaskSchema = new mongoose.Schema({
     status: {
         type: String,
         required: true
-    }
+    },	
+	taskType: {
+	  type: String,
+	  enum: ["Technical", "Social"],
+	  default: "Technical"
+	},
+	penaltyApplied: {
+	  type: Boolean,
+	  default: false
+	}
 });
 
 export default mongoose.model('Task', TaskSchema);

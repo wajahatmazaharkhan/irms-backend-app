@@ -13,8 +13,11 @@ const TaskCompletionSchema = new mongoose.Schema(
     comments: { type: String, required: true },
     file: { type: String },
     image: { type: String },
+	reviewed: { type: Boolean, default: false },
+	reviewStatus: { type: String, enum: ["Accepted", "Rejected"], default: null },
   },
-  { timestamps: true } // Automatically add createdAt and updatedAt fields
+  { timestamps: true }
+  
 );
 
 const TaskCompletion = mongoose.model("TaskCompletion", TaskCompletionSchema);
