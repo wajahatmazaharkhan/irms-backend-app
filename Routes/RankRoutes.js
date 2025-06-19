@@ -3,6 +3,6 @@ import {getInternRankings} from '../Controllers/RankController.js';
 const RankRouter = express.Router();
 
 // Get all rankings
-RankRouter.get("/admin/intern-rankings",getInternRankings);
+RankRouter.get("/intern-rankings",getInternRankings);
 
 export default RankRouter;
