@@ -14,7 +14,7 @@ const TaskCompletionSchema = new mongoose.Schema(
     file: { type: String },
     image: { type: String },
 	reviewed: { type: Boolean, default: false },
-	reviewStatus: { type: String, enum: ["Accepted", "Rejected"], default: null },
+	reviewStatus: { type: String, enum: ["Accepted", "Rejected","Pending"], default: "Pending" },
   },
   { timestamps: true }
   
