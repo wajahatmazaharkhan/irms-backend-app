@@ -1,6 +1,6 @@
 import express from "express";
 import { addTask, getTasks, updateTask, deleteTask, getTaskDetails } from "../Controllers/TaskController.js";
-import {reviewTaskSubmission} from "../Controllers/TasksubmitionController.js";
+import {reviewTaskSubmission} from "../Controllers/Tasksubmitioncontroller.js";
 
 const taskRouter = express.Router();
 
