@@ -47,6 +47,7 @@ const newCors = { origin: "http://localhost:5173" };
 app.use(express.json());
 app.use(cors(corsOptions));
 
+app.use("/", RankRouter);
 app.use("/api/auth", router);
 app.use("/user", passwordUpdateRouter);
 app.use("/", attendanceRoutes);
@@ -60,7 +61,7 @@ app.use("/send", notificationRouter);
 app.use("/", leaveRoutes);
 app.use("/", HrInternAssociation);
 app.use("/api/batch", batchRouter);
-app.use("/", RankRouter);
+
 
 
 const responses = {
