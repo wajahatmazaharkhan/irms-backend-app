@@ -3,9 +3,10 @@ import User from "../Models/User.js";
 import Batch from "../Models/batchModel.js";
 
 
-export const addTask = async (req, res) => {
-    const { assignedTo, title, description, startDate, endDate, status,type} = req.body;
 
+export const addTask = async (req, res) => {
+    const { assignedTo, title, description, startDate, endDate,type} = req.body;
+	const status = "pending";
     // 1. Validate input
     if (!assignedTo || !title || !description || !startDate || !endDate || !status ||!type) {
         console.warn("Validation failed: Missing required fields.");
