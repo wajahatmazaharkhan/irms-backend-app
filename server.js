@@ -17,6 +17,8 @@ import notificationRouter from "./Routes/notificationRouter.js";
 import leaveRoutes from "./Routes/Leave.js";
 import HrInternAssociation from "./Routes/HrInternRoutes.js";
 import batchRouter from "./Routes/batchRouter.js";
+import RankRouter from "./Routes/RankRoutes.js";
+
 dotenv.config();
 
 const app = express();
@@ -58,6 +60,8 @@ app.use("/send", notificationRouter);
 app.use("/", leaveRoutes);
 app.use("/", HrInternAssociation);
 app.use("/api/batch", batchRouter);
+app.use("/", RankRouter);
+
 
 const responses = {
   hello: "Hi! How can I assist you?",
