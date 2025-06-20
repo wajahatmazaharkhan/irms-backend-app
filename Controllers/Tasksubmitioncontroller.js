@@ -131,7 +131,9 @@ export const reviewTaskSubmission = async (req, res) => {
       console.warn("Missing required fields.");
       return res.status(400).json({ error: "userId, taskId, and status are required." });
     }
-
+	console.log("Task: ",taskId);
+	console.log("userId: ",userId);
+	console.log("status: ",status);
     const task = await Task.findById(taskId);
     const user = await User.findById(userId);
     const submission = await TaskCompletion.findOne({ task: taskId, user: userId });
@@ -197,14 +199,15 @@ export const reviewTaskSubmission = async (req, res) => {
 
 export const deleteTaskSubmissionByTaskId = async (req, res) => {
   try {
+	console.log("Inside delete");
     const { taskId } = req.params;
 
     if (!taskId) {
       return res.status(400).json({ error: "Task ID is required." });
     }
-
+	console.log("Taskid: ",taskId);
     const submission = await TaskCompletion.findOneAndDelete({ task: taskId });
-
+	console.log("submission: ",submission);
     if (!submission) {
       return res.status(404).json({ error: "No submission found for this task ID." });
     }

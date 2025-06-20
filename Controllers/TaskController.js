@@ -135,6 +135,18 @@ export const getTaskDetails = async (req, res) => {
 };
 
 
+// Get all task details
+export const getAllTasks = async (req, res) => {
+    try {
+        const taskDetails = await Task.find({});
+        res.status(200).json({ taskDetails });
+    } catch (error) {
+        console.error("Error getting task details:", error);
+        res.status(500).json({ message: "Failed to get task details!" });
+    }
+};
+
+
 // Delete task
 export const deleteTask = async (req, res) => {
     try {
