@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import connectDB from "./src/db/index.js";
 import cors from "cors";
 
+import messageRoutes from "./Routes/messageRoutes.js";
 import router from "./Routes/AuthRouter.js";
 import attendanceRoutes from "./Routes/AttendanceRoutes.js";
 import { startCronJobs } from "./Controllers/AutoAccountDel.js";
@@ -18,15 +19,53 @@ import leaveRoutes from "./Routes/Leave.js";
 import HrInternAssociation from "./Routes/HrInternRoutes.js";
 import batchRouter from "./Routes/batchRouter.js";
 import RankRouter from "./Routes/RankRoutes.js";
+import http from "http";
+import { Server } from "socket.io";
 
 dotenv.config();
 
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST", "DELETE", "PATCH", "HEAD", "PUT", "OPTIONS"]
+  }
+});
+
+io.on("connection", (socket) => {
+  console.log("🔌 Client connected");
+
+  socket.on("joinRoom", ({ senderId, receiverId }) => {
+    const room = [senderId, receiverId].sort().join("-");
+    socket.join(room);
+    console.log(`📥 User joined room: ${room}`);
+  });
+
+  socket.on("sendMessage", (message) => {
+    const room = [message.sender, message.receiver].sort().join("-");
+    io.to(room).emit("newMessage", message);
+  });
+
+  socket.on("typing", ({ senderId, receiverId }) => {
+    const room = [senderId, receiverId].sort().join("-");
+    socket.to(room).emit("typing", { senderId });
+  });
+
+  socket.on("stopTyping", ({ senderId, receiverId }) => {
+    const room = [senderId, receiverId].sort().join("-");
+    socket.to(room).emit("stopTyping", { senderId });
+  });
+
+  socket.on("disconnect", () => {
+    console.log("❌ Client disconnected");
+  });
+});
+
 
 app.use("/uploads", express.static("projectimageuploads"));
 
 const corsOptions = {
-
 
   origin: ["https://www.scaleindia.org.in"],
 
@@ -52,6 +91,7 @@ app.use("/api/auth", router);
 app.use("/user", passwordUpdateRouter);
 app.use("/", attendanceRoutes);
 app.use("/task", taskRouter);
+app.use("/chat", messageRoutes);
 app.use("/", adminRouter);
 app.use("/reports", reportRoutes);
 app.use("/project", projectRoutes);
@@ -90,7 +130,7 @@ const PORT = process.env.PORT || 4000;
 
 connectDB()
   .then(() => {
-    app.listen(PORT, () => {
+    server.listen(PORT, () => {
       console.log(`Server is running on port: ${PORT}`);
     });
 
