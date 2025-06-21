@@ -32,6 +32,7 @@
     "nodemon": "^3.1.9",
     "pdfkit": "^0.15.2",
     "prettier": "^3.4.2",
-    "react-phone-input-2": "^2.15.1"
+    "react-phone-input-2": "^2.15.1",
+    "socket.io": "^4.8.1"
   }
 }
