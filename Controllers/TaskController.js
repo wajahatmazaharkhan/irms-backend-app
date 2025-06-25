@@ -3,9 +3,10 @@ import User from "../Models/User.js";
 import Batch from "../Models/batchModel.js";
 
 
-export const addTask = async (req, res) => {
-    const { assignedTo, title, description, startDate, endDate, status,type} = req.body;
 
+export const addTask = async (req, res) => {
+    const { assignedTo, title, description, startDate, endDate,type} = req.body;
+	const status = "pending";
     // 1. Validate input
     if (!assignedTo || !title || !description || !startDate || !endDate || !status ||!type) {
         console.warn("Validation failed: Missing required fields.");
@@ -126,6 +127,18 @@ export const getTaskDetails = async (req, res) => {
     const { id } = req.params;
     try {
         const taskDetails = await Task.findById(id);
+        res.status(200).json({ taskDetails });
+    } catch (error) {
+        console.error("Error getting task details:", error);
+        res.status(500).json({ message: "Failed to get task details!" });
+    }
+};
+
+
+// Get all task details
+export const getAllTasks = async (req, res) => {
+    try {
+        const taskDetails = await Task.find({});
         res.status(200).json({ taskDetails });
     } catch (error) {
         console.error("Error getting task details:", error);
