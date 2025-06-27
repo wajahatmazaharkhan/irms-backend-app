@@ -12,12 +12,12 @@ export const signupValidation = (req, res, next) => {
       'string.empty': 'Name is required',
     }),
     department: Joi.string()
-    .valid('development', 'hr', 'research')  // Restrict to only these values
-    .required()  // Ensure the field is required
-    .messages({
-      'string.empty': 'Name is required',  // Custom message for empty field
-      'any.only': 'Department must be one of [development, hr, research]',  // Custom message for invalid department
-    }),
+      .valid('development', 'hr', 'research', 'communication')  // Restrict to only these values
+      .required()  // Ensure the field is required
+      .messages({
+        'string.empty': 'Name is required',  // Custom message for empty field
+        'any.only': 'Department must be one of [development, hr, research, communication]',  // Custom message for invalid department
+      }),
 
 
     mnumber: Joi.string()
@@ -45,7 +45,7 @@ export const signupValidation = (req, res, next) => {
     }),
 
     role: Joi.string()
-      .valid('admin', 'manager', 'intern')
+      .valid('admin', 'hr', 'intern')
       .default('intern')
       .messages({
         'any.only': 'Role must be one of admin, manager, or intern',
