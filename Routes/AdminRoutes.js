@@ -3,6 +3,8 @@ import {
   getAllUsers,
   updateUser,
   deleteUser,
+  acceptUser,
+  getAvaialableInternsReq,
   uploadProfilePicture,
 } from "../Controllers/admincontroller.js";
 
@@ -34,6 +36,7 @@ router.get("/batches/progress", getBatchProgress);
 
 // Route to create a batch
 router.post("/batches", createBatch);
+router.post("/accept/:userid", acceptUser);
 
 // Route to update a user
 router.put("/update/:userid", uploadProfilePicture, updateUser);
@@ -43,6 +46,7 @@ router.get("/batches/:id", getBatchById);
 
 // Route to edit details of a batch
 router.put("/batches/:id", updateBatch);
+router.get("/available-interns", getAvaialableInternsReq);
 
 // Route to delete a user
 router.delete("/delete/:userid", deleteUser);

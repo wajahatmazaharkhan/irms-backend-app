@@ -303,3 +303,73 @@ export const updateBatchWithUser = async (req, res) => {
       .json({ error: "Internal Server Error", details: error.message });
   }
 };
+
+
+export const acceptUser = async (req, res) => {
+  const { userid } = req.params;
+
+  try {
+    const user = await User.findById(userid);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.isVerified = true;
+    await user.save();
+
+    res.status(200).json({ message: "User accepted successfully", isVerified: user.isVerified });
+
+
+  } catch (error) {
+    console.error("Error accepting user:", error);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+
+}
+
+export const DeleteUser = async (req, res) => {
+  const { userid } = req.params;
+
+  try {
+    const user = await User.findById(userid);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Delete the user
+    const deleteduser = await User.findByIdAndDelete(userid);
+
+    if (!deleteduser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({ message: "User Rejected successfully", data: deleteduser });
+
+
+  } catch (error) {
+    console.error("Error accepting user:", error);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+
+}
+
+export const getAvaialableInternsReq = async (req, res) => {
+  const userRequests = await User.find({ isVerified: false, role: "intern" })
+    .select("name email mnumber profilePicture startDate EndDate role isVerified")
+    .sort({ createdAt: -1 });
+
+  console.log(userRequests);
+
+  if (!userRequests) {
+    return res.status(404).json({ message: "No user requests found" });
+  }
+
+  res.status(200).json({
+    message: "User requests fetched successfully",
+    userRequests,
+  });
+
+
+}

@@ -44,7 +44,7 @@ const UserSchema = new Schema({
   },
   department: {
     type: String,
-    enum: ["research", "development", "hr"],
+    enum: ["research", "development", "hr", "communication"],
     default: "Not Assigned",
   },
   notifications: {
@@ -75,8 +75,6 @@ const UserSchema = new Schema({
     type: Date,
     default: null
   },
-
-
   permissions: {
     type: [
       {
@@ -98,11 +96,15 @@ const UserSchema = new Schema({
     ],
     default: []
   },
- 
+  isVerified: {
+    type: Boolean,
+    default: false
+  },
   totalPoints: {
-	  type: Number,
-	  default: 0
-	}
+    type: Number,
+    default: 0
+  }
+
 
 });
 
