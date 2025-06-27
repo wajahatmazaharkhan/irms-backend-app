@@ -19,6 +19,8 @@ import leaveRoutes from "./Routes/Leave.js";
 import HrInternAssociation from "./Routes/HrInternRoutes.js";
 import batchRouter from "./Routes/batchRouter.js";
 import RankRouter from "./Routes/RankRoutes.js";
+
+import ticketRouter from "./Routes/ticketRoutes.js";
 import http from "http";
 import { Server } from "socket.io";
 
@@ -101,6 +103,7 @@ app.use("/send", notificationRouter);
 app.use("/", leaveRoutes);
 app.use("/", HrInternAssociation);
 app.use("/api/batch", batchRouter);
+app.use("/ticket", ticketRouter);
 
 
 
