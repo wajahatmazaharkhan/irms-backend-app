@@ -102,7 +102,15 @@ const UserSchema = new Schema({
   totalPoints: {
 	  type: Number,
 	  default: 0
-	}
+	},
+  lastActiveAt: {
+    type: Date,
+    default: null
+  },
+  totalTimeSpent: {
+    type: Number,
+    default: 0 // in seconds
+  }
 
 });
 

@@ -21,6 +21,7 @@ import batchRouter from "./Routes/batchRouter.js";
 import RankRouter from "./Routes/RankRoutes.js";
 import http from "http";
 import { Server } from "socket.io";
+import dashboardRoutes from "./Routes/DashboardRoutes.js";
 
 dotenv.config();
 
@@ -101,6 +102,7 @@ app.use("/send", notificationRouter);
 app.use("/", leaveRoutes);
 app.use("/", HrInternAssociation);
 app.use("/api/batch", batchRouter);
+app.use("/dashboard", dashboardRoutes);
 
 
 
