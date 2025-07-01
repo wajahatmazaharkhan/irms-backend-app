@@ -23,6 +23,7 @@ import RankRouter from "./Routes/RankRoutes.js";
 import ticketRouter from "./Routes/ticketRoutes.js";
 import http from "http";
 import { Server } from "socket.io";
+import dashboardRoutes from "./Routes/DashboardRoutes.js";
 
 dotenv.config();
 
@@ -104,6 +105,7 @@ app.use("/", leaveRoutes);
 app.use("/", HrInternAssociation);
 app.use("/api/batch", batchRouter);
 app.use("/ticket", ticketRouter);
+app.use("/dashboard", dashboardRoutes);
 
 
 

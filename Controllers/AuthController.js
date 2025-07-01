@@ -153,3 +153,28 @@ export const getUserById = async (req, res) => {
     }
 };
 
+export const logout = async (req, res) => {
+    try {
+        const userId = req.user && req.user.id;
+        if (!userId) {
+            return res.status(401).json({ message: 'User not authenticated' });
+        }
+        // The frontend should send sessionStart as a timestamp (ms) in the body
+        const { sessionStart } = req.body;
+        if (!sessionStart) {
+            return res.status(400).json({ message: 'Session start time required' });
+        }
+        const sessionEnd = Date.now();
+        const sessionDuration = Math.floor((sessionEnd - sessionStart) / 1000); // in seconds
+        // Update totalTimeSpent
+        const user = await User.findById(userId);
+        if (user) {
+            user.totalTimeSpent = (user.totalTimeSpent || 0) + sessionDuration;
+            await user.save();
+        }
+        return res.status(200).json({ message: 'Logout successful', sessionDuration });
+    } catch (error) {
+        return res.status(500).json({ message: 'Server error during logout' });
+    }
+};
+

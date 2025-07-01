@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
+import User from '../Models/User.js';
 
-export const ensureAuthenticated = (req, res, next) => {
+export const ensureAuthenticated = async (req, res, next) => {
     const auth = req.headers['authorization'];
        console.log("Authorization Header:", auth);
     if (!auth) {
@@ -20,6 +21,8 @@ export const ensureAuthenticated = (req, res, next) => {
                 .json({ message: 'Unauthorized, JWT token is invalid or expired' });
         }
         console.log("User ID:", req.user.id);
+        // Update lastActiveAt for the user
+        await User.findByIdAndUpdate(req.user.id, { lastActiveAt: Date.now() });
         next();
     } catch (err) {
         console.log("Error decoding token:", err.message);
