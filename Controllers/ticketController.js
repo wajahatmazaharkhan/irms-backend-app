@@ -1,5 +1,5 @@
 // ticketController.js
-import Ticket from "../models/ticketModel.js";
+import Ticket from "../Models/ticketModel.js";
 
 
 export const createTicket = async (req, res) => {
