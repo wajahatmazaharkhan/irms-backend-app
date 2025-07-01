@@ -111,7 +111,8 @@ export const login = async (req, res) => {
                 isVerified: user.isVerified,
                 role: user.role,
                 permissions: user.permissions,
-				department: user.department
+                department: user.department,
+                lastActiveAt: user.lastActiveAt,
             },
         });
         console.log(`${user.name} just logged in to IISPPR!`);
