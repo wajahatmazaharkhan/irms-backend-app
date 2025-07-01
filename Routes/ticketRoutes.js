@@ -1,6 +1,6 @@
 // ticketRoutes.js
 import express from "express";
-import Ticket from "../models/ticketModel.js";
+
 import {
   createTicket,
   getAllTickets,
