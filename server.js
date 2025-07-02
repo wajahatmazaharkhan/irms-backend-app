@@ -2,7 +2,6 @@ import express from "express";
 import dotenv from "dotenv";
 import connectDB from "./src/db/index.js";
 import cors from "cors";
-
 import messageRoutes from "./Routes/messageRoutes.js";
 import router from "./Routes/AuthRouter.js";
 import attendanceRoutes from "./Routes/AttendanceRoutes.js";
@@ -19,7 +18,6 @@ import leaveRoutes from "./Routes/Leave.js";
 import HrInternAssociation from "./Routes/HrInternRoutes.js";
 import batchRouter from "./Routes/batchRouter.js";
 import RankRouter from "./Routes/RankRoutes.js";
-
 import ticketRouter from "./Routes/ticketRoutes.js";
 import http from "http";
 import { Server } from "socket.io";
@@ -36,20 +34,37 @@ const io = new Server(server, {
   }
 });
 
+// Socket.IO Implementation
 io.on("connection", (socket) => {
   console.log("🔌 Client connected");
 
+  // 1. User-to-User Chat Rooms
   socket.on("joinRoom", ({ senderId, receiverId }) => {
     const room = [senderId, receiverId].sort().join("-");
     socket.join(room);
-    console.log(`📥 User joined room: ${room}`);
+    console.log(`📥 User joined private room: ${room}`);
   });
 
+  // 2. Ticket-Based Rooms (NEW)
+  socket.on("joinTicketRoom", ({ ticketId, userId }) => {
+    const room = `ticket_${ticketId}`;
+    socket.join(room);
+    console.log(`🎫 User ${userId} joined ticket room: ${room}`);
+  });
+
+  // Message Handlers
   socket.on("sendMessage", (message) => {
     const room = [message.sender, message.receiver].sort().join("-");
     io.to(room).emit("newMessage", message);
   });
 
+  socket.on("sendTicketMessage", (message) => {
+    const room = `ticket_${message.ticketId}`;
+    io.to(room).emit("newTicketMessage", message);
+    console.log(`✉️ Ticket message broadcast to ${room}`);
+  });
+
+  // Typing Indicators
   socket.on("typing", ({ senderId, receiverId }) => {
     const room = [senderId, receiverId].sort().join("-");
     socket.to(room).emit("typing", { senderId });
@@ -65,13 +80,11 @@ io.on("connection", (socket) => {
   });
 });
 
-
+// Middleware and Routes
 app.use("/uploads", express.static("projectimageuploads"));
 
 const corsOptions = {
-
   origin: ["https://www.scaleindia.org.in"],
-
   credentials: true,
   methods: "GET, POST, DELETE, PATCH, HEAD, PUT, OPTIONS",
   allowedHeaders: [
@@ -81,14 +94,12 @@ const corsOptions = {
     "cache-control",
   ],
   exposedHeaders: ["Authorization"],
-
 };
-
-const newCors = { origin: "http://localhost:5173" };
 
 app.use(express.json());
 app.use(cors(corsOptions));
 
+// Routes
 app.use("/", RankRouter);
 app.use("/api/auth", router);
 app.use("/user", passwordUpdateRouter);
@@ -107,21 +118,17 @@ app.use("/api/batch", batchRouter);
 app.use("/ticket", ticketRouter);
 app.use("/dashboard", dashboardRoutes);
 
-
-
-const responses = {
-  hello: "Hi! How can I assist you?",
-  goodbye: "Goodbye! Have a nice day.",
-  default: "Sorry, I didn't understand that.",
-};
-
+// Test Endpoints
 app.post("/chat", (req, res) => {
+  const responses = {
+    hello: "Hi! How can I assist you?",
+    goodbye: "Goodbye! Have a nice day.",
+    default: "Sorry, I didn't understand that.",
+  };
   const userMessage = req.body.message ? req.body.message.toLowerCase() : "";
   let botResponse = responses[userMessage] || responses.default;
   res.json({ message: botResponse });
 });
-
-startCronJobs();
 
 app.get("/ping", (req, res) => {
   res.send("PONG");
@@ -130,6 +137,9 @@ app.get("/ping", (req, res) => {
 app.get("/", (req, res) => {
   res.send("IISPPR Server is up and running!");
 });
+
+// Server Startup
+startCronJobs();
 
 const PORT = process.env.PORT || 4000;
 
