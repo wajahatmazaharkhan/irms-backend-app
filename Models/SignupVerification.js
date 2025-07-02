@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+const { Schema } = mongoose;
 
 const SignupVerificationSchema = new mongoose.Schema({
     email: {
@@ -21,6 +22,11 @@ const SignupVerificationSchema = new mongoose.Schema({
         department: String,
         startDate: Date,
         EndDate: Date,
+        unapprovedBatch: {
+            type: Schema.Types.ObjectId,
+            ref: "Batch",
+            default: null,
+        },
         role: {
             type: String,
             enum: ['intern', 'hr'],
