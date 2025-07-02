@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 import User from "../Models/User.js";
 import dotenv from 'dotenv';
 import nodemailer from 'nodemailer';
+import SignupVerification from "../Models/SignupVerification.js";
 
 dotenv.config();
 
@@ -194,3 +195,115 @@ export const resetPassword = async (req, res) => {
 //         res.status(500).json({ message: 'Server error', error });
 //     }
 // };
+
+
+export const sendSignupOtp = async (req, res) => {
+    try {
+        const { name, email, password, rpassword, mnumber, department, startDate, EndDate } = req.body;
+
+        if (!email || !name || !password || !rpassword || !mnumber || !department || !startDate || !EndDate) {
+            return res.status(400).json({ message: "All fields are required." });
+        }
+
+        if (password !== rpassword) {
+            return res.status(400).json({ message: "Passwords do not match." });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const hashedOtp = await bcrypt.hash(otp, 10);
+        const expiresAt = Date.now() + 10 * 60 * 1000;
+
+        const role = department === "hr" ? "hr" : "intern";
+
+        await SignupVerification.findOneAndUpdate(
+            { email },
+            {
+                email,
+                otpHash: hashedOtp,
+                expiresAt,
+                userData: {
+                    name,
+                    password: hashedPassword,
+                    mnumber,
+                    department,
+                    startDate,
+                    EndDate,
+                    role,
+                },
+            },
+            { upsert: true, new: true }
+        );
+
+        const transporter = createTransporter();
+        await transporter.sendMail({
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: "Signup Verification - Intern Management System",
+            html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px;">
+          <h2>Email Verification</h2>
+          <p>Hello ${name},</p>
+          <p>Here is your OTP to verify your email:</p>
+          <h1 style="letter-spacing: 4px;">${otp}</h1>
+          <p>This OTP is valid for 10 minutes.</p>
+        </div>
+      `,
+        });
+
+        res.status(200).json({ message: "OTP sent to email" });
+    } catch (error) {
+        console.error("Error sending signup OTP:", error);
+        res.status(500).json({ message: "Failed to send OTP" });
+    }
+};
+
+
+export const verifySignupOtp = async (req, res) => {
+    try {
+        const { email, otp } = req.body;
+
+        if (!email || !otp) {
+            return res.status(400).json({ message: "Email and OTP are required." });
+        }
+
+        const record = await SignupVerification.findOne({
+            email,
+            expiresAt: { $gt: Date.now() },
+        });
+
+        if (!record) {
+            return res.status(400).json({ message: "OTP expired or invalid." });
+        }
+
+        const isOtpValid = await bcrypt.compare(otp, record.otpHash);
+        if (!isOtpValid) {
+            return res.status(400).json({ message: "Invalid OTP." });
+        }
+
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(409).json({ message: "User already exists." });
+        }
+
+        const newUser = new User({
+            name: record.userData.name,
+            email: record.email,
+            password: record.userData.password,
+            mnumber: record.userData.mnumber,
+            EndDate: record.userData.EndDate,
+            department: record.userData.department,
+            startDate: record.userData.startDate,
+            role: record.userData.role,
+        });
+
+        await newUser.save();
+        await SignupVerification.deleteOne({ _id: record._id });
+
+        return res.status(201).json({ message: "Signup complete. User created successfully." });
+    } catch (err) {
+        console.error("Error verifying signup OTP:", err);
+        return res.status(500).json({ message: "Server error during OTP verification." });
+    }
+};
