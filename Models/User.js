@@ -66,6 +66,15 @@ const UserSchema = new Schema({
     ref: "Batch",
     default: null,
   },
+  unapprovedBatch: {
+    type: Schema.Types.ObjectId,
+    ref: "Batch",
+    default: null,
+  },
+  batchApproved: {
+    type: Boolean,
+    default: false,
+  },
 
   resetPasswordOtp: {
     type: String,

@@ -199,10 +199,14 @@ export const resetPassword = async (req, res) => {
 
 export const sendSignupOtp = async (req, res) => {
     try {
-        const { name, email, password, rpassword, mnumber, department, startDate, EndDate } = req.body;
+        const { name, email, password, rpassword, mnumber, department, startDate, EndDate,batchId } = req.body;
 
         if (!email || !name || !password || !rpassword || !mnumber || !department || !startDate || !EndDate) {
             return res.status(400).json({ message: "All fields are required." });
+        }
+
+        if (!batchId) {
+            return res.status(400).json({ message: "Batch selection is required." });
         }
 
         if (password !== rpassword) {
@@ -231,6 +235,7 @@ export const sendSignupOtp = async (req, res) => {
                     startDate,
                     EndDate,
                     role,
+                    unapprovedBatch: batchId,
                 },
             },
             { upsert: true, new: true }
@@ -296,6 +301,8 @@ export const verifySignupOtp = async (req, res) => {
             department: record.userData.department,
             startDate: record.userData.startDate,
             role: record.userData.role,
+            unapprovedBatch: record.userData.unapprovedBatch,
+            batchApproved: false
         });
 
         await newUser.save();
