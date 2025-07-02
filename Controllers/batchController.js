@@ -498,4 +498,73 @@ export const getByHr = async (req, res) => {
     console.error("Error fetching batches by HR:", error);
     res.status(500).json({ error: "Internal Server Error", details: error.message });
   }
-};  
+};
+
+
+// GET /batch-requests/:batchId
+export const getUsersByBatchId = async (req, res) => {
+  try {
+    const { batchId } = req.params;
+
+    if (!batchId) {
+      return res.status(400).json({ message: "Batch ID is required" });
+    }
+
+    const users = await User.find({
+      unapprovedBatch: batchId,
+      batchApproved: false,
+    });
+
+    res.status(200).json({ message: "Users fetched", data: users });
+  } catch (err) {
+    console.error("Error fetching users by batch ID:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+// GET /batch-requests
+export const getAllPendingBatchApprovals = async (req, res) => {
+  try {
+    const users = await User.find({
+      role: "intern",
+      batchApproved: false,
+      unapprovedBatch: { $ne: null },
+    });
+
+    res.status(200).json({ message: "Pending batch approvals", data: users });
+  } catch (err) {
+    console.error("Error fetching pending batch approvals:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+// PATCH /approve-batch/:userId
+export const approveUserBatch = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
+    const user = await User.findById(userId);
+
+    if (!user || !user.unapprovedBatch) {
+      return res.status(404).json({ message: "User or unapproved batch not found" });
+    }
+
+    user.batch = user.unapprovedBatch;
+    user.unapprovedBatch = null;
+    user.batchApproved = true;
+    user.isVerified = true;
+
+    await user.save();
+
+    res.status(200).json({ message: "Batch approved and assigned" });
+  } catch (err) {
+    console.error("Error approving user batch:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
