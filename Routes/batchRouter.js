@@ -1,6 +1,6 @@
 import express from "express";
 import { getBatchesWithCounts } from "../Controllers/admincontroller.js";
-import { getBatchesWithHrAndInternIDs, getByHr, getBatchById,getUsersByBatchId,getAllPendingBatchApprovals,approveUserBatch } from "../Controllers/batchController.js";
+import { getBatchesWithHrAndInternIDs, getByHr, getBatchById,getUsersByBatchId,getAllPendingBatchApprovals,approveUserBatch,rejectUserBatch } from "../Controllers/batchController.js";
 
 const batchRouter = express.Router();
 
@@ -12,6 +12,7 @@ batchRouter.get("/get-ids", getBatchesWithHrAndInternIDs);
 batchRouter.get("/batch-requests/:batchId", getUsersByBatchId);
 batchRouter.get("/batch-requests", getAllPendingBatchApprovals);
 batchRouter.patch("/approve-batch/:userId", approveUserBatch);
+batchRouter.patch("/reject-batch/:userId", rejectUserBatch);
 
 
 export default batchRouter;
