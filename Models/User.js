@@ -27,7 +27,7 @@ const UserSchema = new Schema({
   },
   role: {
     type: String,
-    enum: ["admin", "intern", "hr"],
+    enum: ["admin", "intern", "hr", "hrHead"],
     default: "intern",
   },
   isAdmin: {
@@ -60,7 +60,6 @@ const UserSchema = new Schema({
     type: Date,
     set: (value) => moment(value).format("YYYY-MM-DD"),
   },
-
   batch: {
     type: Schema.Types.ObjectId,
     ref: "Batch",

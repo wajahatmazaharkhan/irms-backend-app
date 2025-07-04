@@ -11,6 +11,7 @@ import {
 
 import { ensureAuthenticated } from '../Middlewares/Auth.js';
 
+
 // Route to assign an intern to an HR
 router.post('/assign-intern', assignInternToHR);
 
