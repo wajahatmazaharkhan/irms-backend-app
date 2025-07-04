@@ -88,6 +88,36 @@ export const deleteUser = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    // If the user had a batch, remove them from the batch's interns list
+
+    if (deletedUser.batch) {
+      const batch = await Batch.findById(deletedUser.batch);
+      if (deletedUser.role === "intern") {
+        if (batch) {
+          batch.interns = batch.interns.filter(
+            (internId) => !internId.equals(userid)
+          );
+          await batch.save();
+          console.log(`Removed user from batch: ${batch.name}`);
+        }
+        else {
+          console.warn(`Batch not found for user ID: ${userid}`);
+        }
+      }
+    } else if (deletedUser.role === "hr") {
+      const batch = await Batch.findById(deletedUser.batch);
+      if (batch) {
+        batch.hr = batch.hr.filter((hrId) => !hrId.equals(userid));
+        await batch.save();
+        console.log(`Removed HR from batch: ${batch.name}`);
+      } else {
+        console.warn(`Batch not found for HR ID: ${userid}`);
+      }
+    }
+
+
+
+
     res
       .status(200)
       .json({ message: "User deleted successfully", data: deletedUser });
@@ -260,6 +290,14 @@ export const deleteBatch = async (req, res) => {
       return res.status(404).json({ error: "Batch not found." });
     }
 
+    const interns = deleteBatch.interns || [];
+    const hrs = deleteBatch.hr || [];
+
+    await User.updateMany(
+      { _id: { $in: [...interns, ...hrs] } },
+      { $set: { batch: null } }
+    );
+
     return res
       .status(200)
       .json({ message: "Batch deleted successfully.", data: deletedBatch });
@@ -328,32 +366,8 @@ export const acceptUser = async (req, res) => {
 
 }
 
-export const DeleteUser = async (req, res) => {
-  const { userid } = req.params;
-
-  try {
-    const user = await User.findById(userid);
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    // Delete the user
-    const deleteduser = await User.findByIdAndDelete(userid);
-
-    if (!deleteduser) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    res.status(200).json({ message: "User Rejected successfully", data: deleteduser });
 
 
-  } catch (error) {
-    console.error("Error accepting user:", error);
-    res.status(500).json({ error: "Internal Server Error", details: error.message });
-  }
-
-}
 
 export const getAvaialableInternsReq = async (req, res) => {
   const userRequests = await User.find({ isVerified: false, role: "intern" })

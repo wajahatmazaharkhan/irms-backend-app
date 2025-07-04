@@ -199,13 +199,13 @@ export const resetPassword = async (req, res) => {
 
 export const sendSignupOtp = async (req, res) => {
     try {
-        const { name, email, password, rpassword, mnumber, department, startDate, EndDate,batchId } = req.body;
+        const { name, email, password, rpassword, mnumber, department, startDate, EndDate, batchId } = req.body;
 
         if (!email || !name || !password || !rpassword || !mnumber || !department || !startDate || !EndDate) {
             return res.status(400).json({ message: "All fields are required." });
         }
 
-        if (!batchId) {
+        if (department === "research" && !batchId) {
             return res.status(400).json({ message: "Batch selection is required." });
         }
 

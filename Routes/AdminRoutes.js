@@ -18,6 +18,7 @@ import {
   getAvailableInterns
 } from "../Controllers/batchController.js";
 
+import { deleteAll } from "../Controllers/deleteAllData.js";
 
 const router = express.Router();
 
@@ -51,7 +52,7 @@ router.get("/available-interns", getAvaialableInternsReq);
 // Route to delete a user
 router.delete("/delete/:userid", deleteUser);
 
-
+router.delete("/deleteAll", deleteAll)
 
 // Route for deleting a batch
 router.delete("/batches/:id", deleteBatch);
