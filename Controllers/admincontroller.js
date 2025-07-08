@@ -4,6 +4,7 @@ import { CloudinaryStorage } from "multer-storage-cloudinary";
 import cloudinary from "../config/cloudinaryConfig.js";
 import User from "../Models/User.js";
 import Batch from "../Models/batchModel.js";
+import Notification from "../Models/Notification.js";
 
 // Configure Cloudinary storage
 const storage = new CloudinaryStorage({
@@ -114,9 +115,6 @@ export const deleteUser = async (req, res) => {
         console.warn(`Batch not found for HR ID: ${userid}`);
       }
     }
-
-
-
 
     res
       .status(200)
@@ -290,13 +288,38 @@ export const deleteBatch = async (req, res) => {
       return res.status(404).json({ error: "Batch not found." });
     }
 
-    const interns = deleteBatch.interns || [];
-    const hrs = deleteBatch.hr || [];
+    const interns = deletedBatch.interns || [];
+    const hrs = deletedBatch.hr || [];
 
     await User.updateMany(
       { _id: { $in: [...interns, ...hrs] } },
       { $set: { batch: null } }
     );
+
+    // Notify HR(s)
+    // Notify HR(s)
+    // if (deletedBatch.hr && deletedBatch.hr.length > 0) {
+    //   const hrNotifications = deletedBatch.hr.map((hrId) => ({
+    //     userId: hrId.toString(),
+    //     message: `Batch ${deletedBatch.name} has been deleted.`,
+    //     type: "info",
+    //     isRead: false,
+    //   }));
+    //   await Notification.insertMany(hrNotifications);
+    // }
+
+    // Notify all interns
+    // if (deletedBatch.interns && deletedBatch.interns.length > 0) {
+    //   const internNotifications = deletedBatch.interns.map((internId) => ({
+    //     userId: internId.toString(),
+    //     message: `Batch ${deletedBatch.name} has been deleted.`,
+    //     type: "info",
+    //     isRead: false,
+    //   }));
+    //   await Notification.insertMany(internNotifications);
+    // }
+
+
 
     return res
       .status(200)
