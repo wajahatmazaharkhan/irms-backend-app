@@ -9,13 +9,15 @@ import {
   getMessagesInTicket,
   markMessagesAsSeenInTicket,
   updateTicketStatus,
-  assignTicket
+  assignTicket,
+  getCommRanking
 } from "../Controllers/ticketController.js";
 
 const ticketRouter = express.Router();
 
 ticketRouter.post("/create", createTicket); // Create ticket
 ticketRouter.get("/getall", getAllTickets); // For Comm Team
+ticketRouter.get("/getcommrank", getCommRanking); // For Comm Team
 ticketRouter.get("/getbyid/:userId", getTicketsByUser); // For Intern
 ticketRouter.post("/:ticketId/message", sendMessageInTicket);
 ticketRouter.get("/:ticketId/messages", getMessagesInTicket);
