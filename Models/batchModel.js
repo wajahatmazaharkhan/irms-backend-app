@@ -48,6 +48,14 @@ const BatchSchema = new Schema({
       },
     },
   ],
+  teams: [
+    {
+      name: { type: String, required: true },
+      members: [{ type: Schema.Types.ObjectId, ref: "User" }],
+      createdBy: { type: Schema.Types.ObjectId, ref: "HRIntern" },
+    
+    }
+  ],
 });
 
 export default mongoose.model("Batch", BatchSchema);

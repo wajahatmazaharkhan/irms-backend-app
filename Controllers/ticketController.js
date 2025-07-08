@@ -1,6 +1,6 @@
 // ticketController.js
 import Ticket from "../Models/ticketModel.js";
-
+import User from "../Models/User.js";
 
 export const createTicket = async (req, res) => {
   try {
@@ -237,5 +237,54 @@ export const assignTicket = async (req, res) => {
   } catch (error) {
     console.error("Error assigning ticket:", error);
     res.status(500).json({ error: "Internal server error." });
+  }
+};
+
+
+
+export const getCommRanking = async (req, res) => {
+  try {
+    const ranking = await Ticket.aggregate([
+      {
+        $match: {
+          status: "Closed",
+          assignedTo: { $ne: null }, // Ignore unassigned
+        },
+      },
+      {
+        $group: {
+          _id: "$assignedTo",
+          closedCount: { $sum: 1 },
+        },
+      },
+      {
+        $sort: { closedCount: -1 }, // Descending order
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "_id",
+          foreignField: "_id",
+          as: "userInfo",
+        },
+      },
+      {
+        $unwind: "$userInfo",
+      },
+      {
+        $project: {
+          _id: 0,
+          userId: "$userInfo._id",
+          name: "$userInfo.name",
+          email: "$userInfo.email",
+          closedCount: 1,
+        },
+      },
+    ]);
+
+    res.status(200).json({ success: true, data: ranking });
+  } catch (err) {
+    console.error("Error in getCommRanking:", err);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };

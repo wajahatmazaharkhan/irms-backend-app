@@ -594,3 +594,133 @@ export const rejectUserBatch = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+
+export const createTeam = async (req, res) => {
+  try {
+
+    if (!req.user || req.user.role !== "hr") {
+      return res.status(403).json({ error: "Only HRs can create teams." });
+    }
+    const { batchId } = req.params;
+    const { name, members = [] } = req.body;
+    if (!name) return res.status(400).json({ error: "Team name is required." });
+    const batch = await Batch.findById(batchId);
+    if (!batch) return res.status(404).json({ error: "Batch not found." });
+
+    const invalidMembers = members.filter(
+      m => !batch.interns.map(i => i.toString()).includes(m)
+    );
+    if (invalidMembers.length > 0) {
+      return res.status(400).json({ error: "Some members are not part of this batch.", invalidMembers });
+    }
+    batch.teams.push({ name, members, createdBy: req.user.id });
+    await batch.save();
+    return res.status(201).json({ message: "Team created successfully.", teams: batch.teams });
+  } catch (error) {
+    console.error("Error creating team:", error);
+    return res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+};
+
+
+export const addMembersToTeam = async (req, res) => {
+  try {
+    const { batchId, teamId } = req.params;
+    const { members } = req.body;
+    const batch = await Batch.findById(batchId);
+    if (!batch) return res.status(404).json({ error: "Batch not found." });
+    const team = batch.teams.id(teamId);
+    if (!team) return res.status(404).json({ error: "Team not found." });
+
+    const invalidMembers = members.filter(
+      m => !batch.interns.map(i => i.toString()).includes(m)
+    );
+    if (invalidMembers.length > 0) {
+      return res.status(400).json({ error: "Some members are not part of this batch.", invalidMembers });
+    }
+
+    members.forEach(m => {
+      if (!team.members.map(mem => mem.toString()).includes(m)) {
+        team.members.push(m);
+      }
+    });
+    await batch.save();
+    return res.status(200).json({ message: "Members added to team.", team });
+  } catch (error) {
+    console.error("Error adding members to team:", error);
+    return res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+};
+
+
+export const removeMemberFromTeam = async (req, res) => {
+  try {
+    const { batchId, teamId, memberId } = req.params;
+    const batch = await Batch.findById(batchId);
+    if (!batch) return res.status(404).json({ error: "Batch not found." });
+    const team = batch.teams.id(teamId);
+    if (!team) return res.status(404).json({ error: "Team not found." });
+    team.members = team.members.filter(m => m.toString() !== memberId);
+    await batch.save();
+    return res.status(200).json({ message: "Member removed from team.", team });
+  } catch (error) {
+    console.error("Error removing member from team:", error);
+    return res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+};
+
+
+export const moveMemberBetweenTeams = async (req, res) => {
+  try {
+    const { batchId, fromTeamId, toTeamId, memberId } = req.body;
+    const batch = await Batch.findById(batchId);
+    if (!batch) return res.status(404).json({ error: "Batch not found." });
+    const fromTeam = batch.teams.id(fromTeamId);
+    const toTeam = batch.teams.id(toTeamId);
+    if (!fromTeam || !toTeam) return res.status(404).json({ error: "One or both teams not found." });
+
+    fromTeam.members = fromTeam.members.filter(m => m.toString() !== memberId);
+
+    if (!toTeam.members.map(m => m.toString()).includes(memberId)) {
+      toTeam.members.push(memberId);
+    }
+    await batch.save();
+    return res.status(200).json({ message: "Member moved between teams.", fromTeam, toTeam });
+  } catch (error) {
+    console.error("Error moving member between teams:", error);
+    return res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+};
+
+
+export const updateTeam = async (req, res) => {
+  try {
+    const { batchId, teamId } = req.params;
+    const { name } = req.body;
+    const batch = await Batch.findById(batchId);
+    if (!batch) return res.status(404).json({ error: "Batch not found." });
+    const team = batch.teams.id(teamId);
+    if (!team) return res.status(404).json({ error: "Team not found." });
+    if (name) team.name = name;
+    await batch.save();
+    return res.status(200).json({ message: "Team updated.", team });
+  } catch (error) {
+    console.error("Error updating team:", error);
+    return res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+};
+
+
+export const deleteTeam = async (req, res) => {
+  try {
+    const { batchId, teamId } = req.params;
+    const batch = await Batch.findById(batchId);
+    if (!batch) return res.status(404).json({ error: "Batch not found." });
+    batch.teams = batch.teams.filter(t => t._id.toString() !== teamId);
+    await batch.save();
+    return res.status(200).json({ message: "Team deleted." });
+  } catch (error) {
+    console.error("Error deleting team:", error);
+    return res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+};
