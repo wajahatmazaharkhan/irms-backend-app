@@ -84,7 +84,7 @@ io.on("connection", (socket) => {
 app.use("/uploads", express.static("projectimageuploads"));
 
 const corsOptions = {
-  origin: ["https://www.scaleindia.org.in"],
+  origin: ["https://www.scaleindia.org.in", "http://localhost:5173"],
   credentials: true,
   methods: "GET, POST, DELETE, PATCH, HEAD, PUT, OPTIONS",
   allowedHeaders: [

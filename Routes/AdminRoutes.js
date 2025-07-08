@@ -2,6 +2,7 @@ import express from "express";
 import {
   getAllUsers,
   updateUser,
+  deleteBatch,
   deleteUser,
   acceptUser,
   getAvaialableInternsReq,
@@ -12,7 +13,7 @@ import {
   getBatchProgress,
   createBatch,
   getBatchesWithCounts,
-  deleteBatch,
+  // deleteBatch,
   getBatchById,
   updateBatch,
   getAvailableInterns

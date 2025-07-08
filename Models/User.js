@@ -44,7 +44,7 @@ const UserSchema = new Schema({
   },
   department: {
     type: String,
-    enum: ["research", "development", "hr", "communication"],
+    enum: ["research", "development", "hr", "communication", "courseCommunication", "course"],
     default: "Not Assigned",
   },
   notifications: {
