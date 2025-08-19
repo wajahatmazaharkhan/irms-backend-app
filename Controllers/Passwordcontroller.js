@@ -215,7 +215,7 @@ export const sendSignupOtp = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const otp = Math.floor(300000 + Math.random() * 900000).toString();
         const hashedOtp = await bcrypt.hash(otp, 10);
         const expiresAt = Date.now() + 10 * 60 * 1000;
 
