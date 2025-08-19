@@ -49,7 +49,7 @@ export const sendResetOtp = async (req, res) => {
         }
 
         // Generate 6-digit OTP
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const otp = Math.floor(300000 + Math.random() * 900000).toString();
 
         // Hash OTP before saving
         const salt = await bcrypt.genSalt(10);
