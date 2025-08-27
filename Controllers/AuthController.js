@@ -4,6 +4,7 @@ import User from '../Models/User.js';
 import moment from 'moment';
 import dotenv from "dotenv";
 import mongoose from 'mongoose';
+import connectDB from '../src/db/index.js';
 dotenv.config();
 
 const secretKey = process.env.JWT_SECRET;
@@ -59,6 +60,7 @@ export const signup = async (req, res) => {
 
 
 export const login = async (req, res) => {
+    await connectDB();
     try {
         const { email, password } = req.body;
 
