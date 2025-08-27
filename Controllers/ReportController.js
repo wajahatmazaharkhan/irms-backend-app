@@ -3,7 +3,7 @@ import User from "../Models/User.js";
 import PDFDocument from "pdfkit";
 import connectDB from "../src/db/index.js";
 
-const generateReport = async (req, res) => {.
+const generateReport = async (req, res) => {
 	await connectDB();
 	try {
 		const { format } = req.query;
