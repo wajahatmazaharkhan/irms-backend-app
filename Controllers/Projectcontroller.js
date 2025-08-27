@@ -2,6 +2,7 @@ import Project from "../Models/Projects.js";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 import multer from "multer";
 import cloudinary from "../config/cloudinaryConfig.js";
+import connectDB from "../src/db/index.js";
 // Configure Multer to use Cloudinary Storage
 const storage = new CloudinaryStorage({
   cloudinary,
@@ -18,6 +19,7 @@ const upload = multer({
 
 
 export const createProject = async (req, res) => {
+  await connectDB();
   try {
     const { title, subTitle, description, createdBy } = req.body;
 
@@ -42,6 +44,7 @@ export const createProject = async (req, res) => {
 };
 
 export const getAllProjects = async (req, res) => {
+  await connectDB();
     try {
       const projects = await Project.find().sort({ createdAt: -1 });
       res.status(200).json(projects);
@@ -53,6 +56,7 @@ export const getAllProjects = async (req, res) => {
   
 // DELETE: Delete a project by ID
 export const deleteProject = async (req, res) => {
+  await connectDB();
   try {
       const { id } = req.params;
 
@@ -75,6 +79,7 @@ export const deleteProject = async (req, res) => {
 
 // PUT: Update a project by ID
 export const updateProject = async (req, res) => {
+  await connectDB();
   try {
     const { id } = req.params;
     const { title, subTitle, description, createdBy } = req.body;

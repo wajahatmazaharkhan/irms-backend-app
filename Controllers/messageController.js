@@ -1,6 +1,8 @@
 import Message from '../Models/MessageModel.js';
+import connectDB from '../src/db/index.js';
 
 const sendMessage = async (req, res) => {
+    await connectDB();
     const { sender, receiver, content } = req.body;
 
     if (!sender || !receiver || !content) {
@@ -24,6 +26,7 @@ const sendMessage = async (req, res) => {
 }
 
 const getMessages = async (req, res) => {
+    await connectDB();
     const { userId1, userId2 } = req.params;
 
     if (!userId1 || !userId2) {
@@ -52,6 +55,7 @@ const getMessages = async (req, res) => {
 }
 
 const markMessagesAsSeen = async (req, res) => {
+    await connectDB();
     const { senderId, receiverId } = req.body;
 
     if (!senderId || !receiverId) {

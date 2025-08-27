@@ -1,8 +1,10 @@
 // ticketController.js
 import Ticket from "../Models/ticketModel.js";
 import User from "../Models/User.js";
+import connectDB from "../src/db/index.js";
 
 export const createTicket = async (req, res) => {
+  await connectDB();
   try {
     const { title, description, userId } = req.body;
 
@@ -35,6 +37,7 @@ export const createTicket = async (req, res) => {
 
 
 export const getAllTickets = async (req, res) => {
+  await connectDB();
   try {
     const tickets = await Ticket.find()
       .populate("createdBy", "name email")
@@ -49,6 +52,7 @@ export const getAllTickets = async (req, res) => {
 };
 
 export const getTicketsByUser = async (req, res) => {
+  await connectDB();
   try {
     const { userId } = req.params;
 
@@ -66,6 +70,7 @@ export const getTicketsByUser = async (req, res) => {
 
 // ✅ Send a message in a ticket
 export const sendMessageInTicket = async (req, res) => {
+  await connectDB();
   const { ticketId } = req.params;
   const { senderId, text } = req.body;
 
@@ -108,6 +113,7 @@ export const sendMessageInTicket = async (req, res) => {
 
 // ✅ Get all messages in a ticket
 export const getMessagesInTicket = async (req, res) => {
+  await connectDB();
   const { ticketId } = req.params;
 
   try {
@@ -129,6 +135,7 @@ export const getMessagesInTicket = async (req, res) => {
 
 // ✅ Optional — Mark all unseen messages as seen for a user
 export const markMessagesAsSeenInTicket = async (req, res) => {
+  await connectDB();
   const { ticketId } = req.params;
   const { userId } = req.body;
 
@@ -165,6 +172,7 @@ export const markMessagesAsSeenInTicket = async (req, res) => {
 
 
 export const updateTicketStatus = async (req, res) => {
+  await connectDB();
     const { ticketId } = req.params;
     const { newStatus, userId } = req.body;
 
@@ -207,6 +215,7 @@ export const updateTicketStatus = async (req, res) => {
 };
 
 export const assignTicket = async (req, res) => {
+  await connectDB();
   const { ticketId } = req.params;
   const { userId } = req.body; // Comm team member assigning to self
 
@@ -243,6 +252,7 @@ export const assignTicket = async (req, res) => {
 
 
 export const getCommRanking = async (req, res) => {
+  await connectDB();
   try {
     const ranking = await Ticket.aggregate([
       {

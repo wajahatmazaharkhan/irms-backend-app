@@ -2,8 +2,10 @@ import Batch from "../Models/batchModel.js";
 import HRIntern from "../Models/HrInternAssociation.js";
 import mongoose from 'mongoose';
 import User from '../Models/User.js';
+import connectDB from "../src/db/index.js";
 
 export const createBatch = async (req, res) => {
+  await connectDB();
   try {
     const { name, startDate, endDate, interns = [], hr = [] } = req.body;
 
@@ -86,6 +88,7 @@ export const createBatch = async (req, res) => {
 
 
 export const getBatchesWithCounts = async (req, res) => {
+  await connectDB();
   try {
 
     const batches = await Batch.find()
@@ -120,6 +123,7 @@ export const getBatchesWithCounts = async (req, res) => {
 
 // Get batch by ID
 export const getBatchById = async (req, res) => {
+  await connectDB();
   try {
     const { id } = req.params;
 
@@ -159,6 +163,7 @@ export const getBatchById = async (req, res) => {
 };
 
 export const deleteBatch = async (req, res) => {
+  await connectDB();
   try {
     const { id } = req.params;
 
@@ -182,6 +187,7 @@ export const deleteBatch = async (req, res) => {
 };
 
 export const updateBatch = async (req, res) => {
+  await connectDB();
   try {
     const { id } = req.params;
     const { name, startDate, endDate, interns, hr } = req.body;
@@ -307,6 +313,7 @@ export const updateBatch = async (req, res) => {
 };
 
 export const getBatchProgress = async (req, res) => {
+  await connectDB();
   try {
     const batches = await Batch.find()
       .populate('tasks.taskId', 'title description status')
@@ -353,6 +360,7 @@ export const getBatchProgress = async (req, res) => {
 // GET /batches/available-interns
 
 export const getAvailableInterns = async (req, res) => {
+  await connectDB();
   try {
     // Step 1: Get all batches
     const existingBatches = await Batch.find({}, "_id");
@@ -397,6 +405,7 @@ export const getAvailableInterns = async (req, res) => {
 
 
 export const getBatchesWithHrAndInternIDs = async (req, res) => {
+  await connectDB();
   try {
     const batches = await Batch.find()
       .populate({
@@ -451,6 +460,7 @@ export const getBatchesWithHrAndInternIDs = async (req, res) => {
 };
 
 export const getByHr = async (req, res) => {
+  await connectDB();
   try {
     const { hrId } = req.params;
 
@@ -503,6 +513,7 @@ export const getByHr = async (req, res) => {
 
 // GET /batch-requests/:batchId
 export const getUsersByBatchId = async (req, res) => {
+  await connectDB();
   try {
     const { batchId } = req.params;
 
@@ -525,6 +536,7 @@ export const getUsersByBatchId = async (req, res) => {
 
 // GET /batch-requests
 export const getAllPendingBatchApprovals = async (req, res) => {
+  await connectDB();
   try {
     const users = await User.find({
       role: "intern",
@@ -542,6 +554,7 @@ export const getAllPendingBatchApprovals = async (req, res) => {
 
 // PATCH /approve-batch/:userId
 export const approveUserBatch = async (req, res) => {
+  await connectDB();
   try {
     const { userId } = req.params;
 
@@ -573,6 +586,7 @@ export const approveUserBatch = async (req, res) => {
 // PATCH /reject-batch/:userId
 
 export const rejectUserBatch = async (req, res) => {
+  await connectDB();
   try {
     const { userId } = req.params;
 
@@ -596,6 +610,7 @@ export const rejectUserBatch = async (req, res) => {
 };
 
 export const createTeam = async (req, res) => {
+  await connectDB();
   try {
 
     if (!req.user || req.user.role !== "hr") {
@@ -624,6 +639,7 @@ export const createTeam = async (req, res) => {
 
 
 export const addMembersToTeam = async (req, res) => {
+  await connectDB();
   try {
     const { batchId, teamId } = req.params;
     const { members } = req.body;
@@ -654,6 +670,7 @@ export const addMembersToTeam = async (req, res) => {
 
 
 export const removeMemberFromTeam = async (req, res) => {
+  await connectDB();
   try {
     const { batchId, teamId, memberId } = req.params;
     const batch = await Batch.findById(batchId);
@@ -671,6 +688,7 @@ export const removeMemberFromTeam = async (req, res) => {
 
 
 export const moveMemberBetweenTeams = async (req, res) => {
+  await connectDB();
   try {
     const { batchId, fromTeamId, toTeamId, memberId } = req.body;
     const batch = await Batch.findById(batchId);
@@ -694,6 +712,7 @@ export const moveMemberBetweenTeams = async (req, res) => {
 
 
 export const updateTeam = async (req, res) => {
+  await connectDB();
   try {
     const { batchId, teamId } = req.params;
     const { name } = req.body;
@@ -712,6 +731,7 @@ export const updateTeam = async (req, res) => {
 
 
 export const deleteTeam = async (req, res) => {
+  await connectDB();
   try {
     const { batchId, teamId } = req.params;
     const batch = await Batch.findById(batchId);

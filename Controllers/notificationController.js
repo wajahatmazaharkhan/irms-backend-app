@@ -5,9 +5,11 @@ import Task from "../Models/Task.js";
 import HrInternAssociation from "../Models/HrInternAssociation.js";
 import Batch from "../Models/batchModel.js";
 import HRIntern from "../Models/HrInternAssociation.js";
+import connectDB from "../src/db/index.js";
 
 // Function to send a notification
 const sendNotification = async (req, res) => {
+  await connectDB();
   const { status, message, taskId } = req.body;
   const hr = req.user;
   console.log("HR User:", hr);
@@ -74,6 +76,7 @@ const sendNotification = async (req, res) => {
 };
 
 const sendNotificationToSingleUser = async (req, res) => {
+  await connectDB();
     const { userId, status, message } = req.body;
     try {
         const notification = new Notification({
@@ -129,6 +132,7 @@ const deleteNotification = async (req, res) => {
 }
 
 const notifyAll = async (req, res) => {
+  await connectDB();
     const { status, message } = req.body;
 
     try {

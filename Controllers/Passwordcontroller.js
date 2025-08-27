@@ -3,6 +3,7 @@ import User from "../Models/User.js";
 import dotenv from 'dotenv';
 import nodemailer from 'nodemailer';
 import SignupVerification from "../Models/SignupVerification.js";
+import connectDB from '../src/db/index.js';
 
 dotenv.config();
 
@@ -39,6 +40,7 @@ const sendEmail = async (options) => {
 
 
 export const sendResetOtp = async (req, res) => {
+    await connectDB();
     try {
         const { email } = req.body;
 
@@ -90,6 +92,7 @@ export const sendResetOtp = async (req, res) => {
 };
 
 export const verifyResetOtp = async (req, res) => {
+    await connectDB();
     try {
         const { email, otp } = req.body;
 
@@ -118,6 +121,7 @@ export const verifyResetOtp = async (req, res) => {
 };
 
 export const resetPassword = async (req, res) => {
+    await connectDB();
     try {
         const { email, newPassword } = req.body;
 
@@ -198,6 +202,7 @@ export const resetPassword = async (req, res) => {
 
 
 export const sendSignupOtp = async (req, res) => {
+    await connectDB();
     try {
         const { name, email, password, rpassword, mnumber, department, startDate, EndDate, batchId } = req.body;
 
@@ -266,6 +271,7 @@ export const sendSignupOtp = async (req, res) => {
 
 
 export const verifySignupOtp = async (req, res) => {
+    await connectDB();
     try {
         const { email, otp } = req.body;
 

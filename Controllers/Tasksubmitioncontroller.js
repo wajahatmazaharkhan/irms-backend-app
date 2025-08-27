@@ -7,6 +7,7 @@ import { ensureAuthenticated } from "../Middlewares/Auth.js";
 import User from "../Models/User.js";
 import Task from "../Models/Task.js";
 import Batch from "../Models/batchModel.js";
+import connectDB from "../src/db/index.js";
 
 // Configure Multer for Cloudinary storage
 const storage = new CloudinaryStorage({
@@ -25,7 +26,7 @@ const upload = multer({
 
 export const submitTaskCompletion = async (req, res) => {
   console.log("Inside task submission");
-
+await connectDB();
   try {
 
     const userId = req.user?._id || req.user?.id;
@@ -106,6 +107,7 @@ export const submitTaskCompletion = async (req, res) => {
 
 
 export const getTasksreports = async (req, res) => {
+  await connectDB();
   try {
     const tasks = await TaskCompletion.find()
       .sort({ createdAt: -1 })
@@ -124,6 +126,7 @@ export { upload };
 
 
 export const reviewTaskSubmission = async (req, res) => {
+  await connectDB();
   try {
     const { userId, taskId, status } = req.body;
 
@@ -198,6 +201,7 @@ export const reviewTaskSubmission = async (req, res) => {
 
 
 export const deleteTaskSubmissionByTaskId = async (req, res) => {
+  await connectDB();
   try {
 	console.log("Inside delete");
     const { taskId } = req.params;

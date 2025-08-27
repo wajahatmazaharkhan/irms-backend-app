@@ -1,8 +1,10 @@
 import ExcelJS from "exceljs";
 import User from "../Models/User.js";
 import PDFDocument from "pdfkit";
+import connectDB from "../src/db/index.js";
 
-const generateReport = async (req, res) => {
+const generateReport = async (req, res) => {.
+	await connectDB();
 	try {
 		const { format } = req.query;
 
@@ -84,6 +86,7 @@ async function generateExcelReport(res, internsData) {
 }
 
 async function generatePdfReport(res, internsData) {
+	await connectDB();
 	try {
 		const doc = new PDFDocument({
 			margin: 30,
@@ -209,6 +212,7 @@ async function generatePdfReport(res, internsData) {
 }
 
 async function getInternsData() {
+	await connectDB();
 	return await User.aggregate([
 		//initiating pipeline
 		// group the results of each query

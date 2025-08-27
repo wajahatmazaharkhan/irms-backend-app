@@ -1,7 +1,9 @@
 import WeeklyStatus from "../Models/Report.js";
+import connectDB from "../src/db/index.js";
 
 // POST: Submit a Weekly Status Report
 export const submitWeeklyStatus = async (req, res) => {
+  await connectDB();
 
   try {
     const { employeeName, department, date, tasksCompleted, tasksToBeginNextWeek, selfAssessmentComments } = req.body;
@@ -33,6 +35,7 @@ export const submitWeeklyStatus = async (req, res) => {
 
 // GET: Retrieve all Weekly Status Reports
 export const getAllWeeklyStatusReports = async (req, res) => {
+  await connectDB();
   try {
     const reports = await WeeklyStatus.find().sort({ date: -1 });
     res.status(200).json(reports);
@@ -45,6 +48,7 @@ export const getAllWeeklyStatusReports = async (req, res) => {
 
 // GET: Retrieve a Weekly Status Report for perticular hr 
 export const getWeeklyStatusReportByEmployee = async (req, res) => {
+  await connectDB();
   try {
     const { employee_id } = req.params;
 

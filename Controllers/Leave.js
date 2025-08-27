@@ -1,9 +1,11 @@
 // controllers/leaveController.js
 import Leave from '../Models/leave.js';
 import axios from 'axios';
+import connectDB from '../src/db/index.js';
 
 // POST route to submit leave application by intern
 export const postLeaveApplication = async (req, res) => {
+  await connectDB();
   try {
     const { leaveType, startDate, endDate, reason } = req.body;
     const intern = req.user;
@@ -54,6 +56,7 @@ export const postLeaveApplication = async (req, res) => {
 
 // GET route to fetch all leave applications for admin
 export const getAllLeaveApplications = async (req, res) => {
+  await connectDB();
   try {
     const leaves = await Leave.find()
     .populate('internid', 'name email') // Populate 'userId' with only 'name' and 'email' fields from User
@@ -68,6 +71,7 @@ export const getAllLeaveApplications = async (req, res) => {
 
 
 export const getOwnLeaveApplications = async (req, res) => {
+  await connectDB();
   try {
     console.log("Authenticated user ID:", req.user._id);
     const leaves = await Leave.find({ internid: req.user._id }).sort({ createdAt: -1 });
@@ -81,6 +85,7 @@ export const getOwnLeaveApplications = async (req, res) => {
 
 // PUT route to update leave application status by admin
 export const updateLeaveStatus = async (req, res) => {
+  await connectDB();
   const leaveId = req.params.id;
   const { status, updatedBy } = req.body;
 
