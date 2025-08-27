@@ -1,8 +1,10 @@
 
 import Attendance from '../Models/AttendanceModel.js';
+import connectDB from '../src/db/index.js';
 
 
 const markAttendance = async (req, res) => {
+    await connectDB();
     try {
         const { userId, date, status } = req.body;
 
@@ -112,6 +114,7 @@ const markAttendance = async (req, res) => {
 
 // In your controller
 const getAttedanceByid = async (req, res) => {
+    await connectDB();
     try {
         const { userId } = req.params;
 
@@ -129,6 +132,7 @@ const getAttedanceByid = async (req, res) => {
 
 
 const getAttendance = async (req, res) => {
+    await connectDB();
     try {
         const today = new Date();
 
@@ -156,6 +160,7 @@ const getAttendance = async (req, res) => {
 
 
 const deleteTodayAttendance = async (req, res) => {
+    await connectDB();
   try {
     const { userId } = req.params;
     if (!userId) {

@@ -10,6 +10,7 @@ dotenv.config();
 const secretKey = process.env.JWT_SECRET;
 
 export const signup = async (req, res) => {
+    await connectDB();
     try {
         const { name, email, password, rpassword, mnumber, EndDate, department, startDate } = req.body;
 
@@ -125,6 +126,7 @@ export const login = async (req, res) => {
 };
 
 export const getUserById = async (req, res) => {
+    await connectDB();
     try {
         const { id } = req.params;
 
@@ -157,6 +159,7 @@ export const getUserById = async (req, res) => {
 };
 
 export const logout = async (req, res) => {
+    await connectDB();
     try {
         const userId = req.user && req.user.id;
         if (!userId) {

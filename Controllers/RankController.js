@@ -1,7 +1,9 @@
 import mongoose from "mongoose";
 import User from "../Models/User.js";
+import connectDB from "../src/db/index.js";
 
 export const getInternRankings = async function (req, res) {
+  await connectDB();
   try {
     const interns = await User.find({ role: "intern" })
       .select("name email totalPoints department")

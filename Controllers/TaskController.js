@@ -1,10 +1,12 @@
 import Task from '../Models/Task.js';
 import User from "../Models/User.js";
 import Batch from "../Models/batchModel.js";
+import connectDB from '../src/db/index.js';
 
 
 
 export const addTask = async (req, res) => {
+    await connectDB();
     const { assignedTo, title, description, startDate, endDate,type} = req.body;
 	const status = "pending";
     // 1. Validate input
@@ -80,6 +82,7 @@ export const addTask = async (req, res) => {
 
 // Get all tasks
 export const getTasks = async (req, res) => {
+    await connectDB();
     try {
         const { userId } = req.params;
 
@@ -104,6 +107,7 @@ export const getTasks = async (req, res) => {
 
 // Update task
 export const updateTask = async (req, res) => {
+    await connectDB();
     try {
         const { id } = req.params;
         const updatedTask = await Task.findByIdAndUpdate(id, req.body, {
@@ -124,6 +128,7 @@ export const updateTask = async (req, res) => {
 
 // Get task details
 export const getTaskDetails = async (req, res) => {
+    await connectDB();
     const { id } = req.params;
     try {
         const taskDetails = await Task.findById(id);
@@ -137,6 +142,7 @@ export const getTaskDetails = async (req, res) => {
 
 // Get all task details
 export const getAllTasks = async (req, res) => {
+    await connectDB();
     try {
         const taskDetails = await Task.find({});
         res.status(200).json({ taskDetails });
@@ -149,6 +155,7 @@ export const getAllTasks = async (req, res) => {
 
 // Delete task
 export const deleteTask = async (req, res) => {
+    await connectDB();
     try {
         const { id } = req.params;
         const deletedTask = await Task.findByIdAndDelete({ _id: id });

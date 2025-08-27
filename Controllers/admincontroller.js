@@ -5,6 +5,7 @@ import cloudinary from "../config/cloudinaryConfig.js";
 import User from "../Models/User.js";
 import Batch from "../Models/batchModel.js";
 import Notification from "../Models/Notification.js";
+import connectDB from "../src/db/index.js";
 
 // Configure Cloudinary storage
 const storage = new CloudinaryStorage({
@@ -25,6 +26,7 @@ export const uploadProfilePicture = upload.single("profilePicture");
 
 // Update user details
 export const updateUser = async (req, res) => {
+  await connectDB();
   try {
     const { userid } = req.params;
     const updates = req.body;
@@ -57,6 +59,7 @@ export const updateUser = async (req, res) => {
 
 // Get all users
 export const getAllUsers = async (req, res) => {
+  await connectDB();
   try {
     const users = await User.find();
     if (users.length === 0) {
@@ -79,6 +82,7 @@ export const getAllUsers = async (req, res) => {
 // Function to delete a user
 
 export const deleteUser = async (req, res) => {
+  await connectDB();
   try {
     const { userid } = req.params;
 
@@ -128,6 +132,7 @@ export const deleteUser = async (req, res) => {
 };
 
 export const createBatch = async (req, res) => {
+  await connectDB();
   try {
     const { name, startDate, endDate, interns, hr } = req.body;
 
@@ -181,6 +186,7 @@ export const createBatch = async (req, res) => {
 
 // Get all batches with counts
 export const getBatchesWithCounts = async (req, res) => {
+  await connectDB();
   console.log("== getBatchesWithCounts controller invoked ==");
 
   try {
@@ -218,6 +224,7 @@ export const getBatchesWithCounts = async (req, res) => {
 
 // Get batch progress
 export const getBatchProgress = async (req, res) => {
+  await connectDB();
   try {
     const batches = await Batch.find()
       .populate({
@@ -280,6 +287,7 @@ export const getBatchProgress = async (req, res) => {
 
 // Delete a batch
 export const deleteBatch = async (req, res) => {
+  await connectDB();
   try {
     const { id } = req.params;
 
@@ -334,6 +342,7 @@ export const deleteBatch = async (req, res) => {
 
 // Add a user to a batch
 export const updateBatchWithUser = async (req, res) => {
+  await connectDB();
   try {
     const { batchId } = req.params;
     const { userId } = req.body;
@@ -367,6 +376,7 @@ export const updateBatchWithUser = async (req, res) => {
 
 
 export const acceptUser = async (req, res) => {
+  await connectDB();
   const { userid } = req.params;
 
   try {
@@ -393,6 +403,7 @@ export const acceptUser = async (req, res) => {
 
 
 export const getAvaialableInternsReq = async (req, res) => {
+  await connectDB();
   const userRequests = await User.find({ isVerified: false, role: "intern" })
     .select("name email mnumber profilePicture startDate EndDate role isVerified")
     .sort({ createdAt: -1 });

@@ -5,9 +5,11 @@ import User from '../Models/User.js'
 import TaskCompletion from "../Models/Tasksubmition.js";
 
 import WeeklyStatus from "../Models/Report.js"
+import connectDB from '../src/db/index.js';
 
 // Assign an intern to an HR
 export const assignInternToHR = async (req, res) => {
+  await connectDB();
   const { hrId, internId } = req.body;
   console.log("req got in assignInternToHR")
 
@@ -63,6 +65,7 @@ export const assignInternToHR = async (req, res) => {
 
 // Get interns by HR ID
 export const getInternsByHR = async (req, res) => {
+  await connectDB();
   const { hrId } = req.params;
 
   try {
@@ -93,6 +96,7 @@ export const checkInternAssignment = async (req, res) => {
 
 // Batch check interns for assignment
 export const batchCheckInternAssignments = async (req, res) => {
+  await connectDB();
   const { internIds } = req.body; // Expecting an array of internIds
 
   try {

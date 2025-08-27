@@ -18,7 +18,6 @@ const connectDB = async () => {
         serverSelectionTimeoutMS: 30000, // 30 seconds
       })
       .then((mongooseInstance) => {
-        console.log(`✅ MongoDB connected: ${mongooseInstance.connection.host}`);
         return mongooseInstance;
       });
   }
