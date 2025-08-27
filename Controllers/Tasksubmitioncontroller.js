@@ -31,9 +31,9 @@ await connectDB();
 
     const userId = req.user?._id || req.user?.id;
 
-    if (!userId) {
-      return res.status(403).json({ message: "Unauthorized. User info missing." });
-    }
+    // if (!userId) {
+    //   return res.status(403).json({ message: "Unauthorized. User info missing." });
+    // }
 
     const { taskId, comments } = req.body;
 
