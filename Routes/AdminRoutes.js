@@ -16,17 +16,44 @@ import {
   // deleteBatch,
   getBatchById,
   updateBatch,
-  getAvailableInterns
+  getAvailableInterns,
 } from "../Controllers/batchController.js";
 
 import { deleteAll } from "../Controllers/deleteAllData.js";
 
 const router = express.Router();
 
+router.get("/uptime", (req, res) => {
+  try {
+    const processUptimeSeconds = process.uptime(); // process object is globally available, no import needed
+    console.log(`Node.js process uptime: ${processUptimeSeconds} seconds`);
+
+    // Optional: Format for better readability
+    const formatUptime = (totalSeconds) => {
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = Math.floor(totalSeconds % 60);
+
+      const pad = (num) => String(num).padStart(2, "0");
+
+      return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+    };
+
+    const upTime = formatUptime(processUptimeSeconds);
+
+    return res.status(200).json({ upTime });
+
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ success: false, msg: "Internal Error Occurred" });
+  }
+});
+
 // Route to fetch all users
 router.get("/allusers", getAllUsers);
 
-// Route to get all available interns 
+// Route to get all available interns
 router.get("/available-interns", getAvailableInterns);
 
 // Route to fetch batch progress
@@ -53,11 +80,9 @@ router.get("/available-interns", getAvaialableInternsReq);
 // Route to delete a user
 router.delete("/delete/:userid", deleteUser);
 
-router.delete("/deleteAll", deleteAll)
+router.delete("/deleteAll", deleteAll);
 
 // Route for deleting a batch
 router.delete("/batches/:id", deleteBatch);
-
-
 
 export default router;

@@ -96,9 +96,22 @@ const corsOptions = {
   exposedHeaders: ["Authorization"],
 };
 
+const devCorsOptions = {
+  origin: "http://localhost:3000",
+  credentials: true,
+  methods: "GET, POST, DELETE, PATCH, HEAD, PUT, OPTIONS",
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "Access-Control-Allow-Credentials",
+    "cache-control",
+  ],
+  exposedHeaders: ["Authorization"],
+};
+
 
 app.use(express.json());
-app.use(cors(corsOptions));
+app.use(cors(devCorsOptions));
 
 // Routes
 app.use("/", RankRouter);
