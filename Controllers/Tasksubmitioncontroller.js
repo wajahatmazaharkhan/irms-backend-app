@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import multer from "multer";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 import cloudinary from "../config/cloudinaryConfig.js";
-import TaskCompletion from "../Models/Tasksubmition.js";
+import TaskCompletionSchema from "../Models/Tasksubmition.js";
 import { ensureAuthenticated } from "../Middlewares/Auth.js";
 import User from "../Models/User.js";
 import Task from "../Models/Task.js";
@@ -13,95 +13,83 @@ import connectDB from "../src/db/index.js";
 const storage = new CloudinaryStorage({
   cloudinary,
   params: {
-    folder: "task_files", // Folder name in Cloudinary
-    allowed_formats: ["jpg", "png", "pdf", "docx", "webp"], // Allowed file formats
+    folder: "task_files",
+    resource_type: "auto",        // 👈 let Cloudinary decide: image vs raw
+    use_filename: true,           // keep original filename base
+    unique_filename: true,        // avoid collisions
+    allowed_formats: ["jpg", "png", "pdf", "doc", "docx", "webp"],
   },
 });
 
-const upload = multer({
+export const upload = multer({
   storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // Limit file size to 10MB
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
 });
 
-
-export const submitTaskCompletion = async (req, res) => {
+export const submitTaskSchema = async (req, res) => {
   console.log("Inside task submission");
-await connectDB();
-  try {
+  await connectDB();
 
+  try {
     const userId = req.user?._id || req.user?.id;
 
-    // if (!userId) {
-    //   return res.status(403).json({ message: "Unauthorized. User info missing." });
-    // }
-
-    const { taskId, comments } = req.body;
+    const {
+      taskId,
+      comments,
+      methods,
+      results,
+      challenges,
+      timeSpent,
+      githubLink,
+      externalLink,
+      selfEvaluation,
+    } = req.body;
 
     if (!taskId || !comments) {
-      return res.status(400).json({ error: "Task ID and comments are required." });
-
+      return res
+        .status(400)
+        .json({ error: "Task ID and comments are required." });
     }
 
     const fileData = req.files || {};
+    const fileField = fileData.file?.[0] || null;
+    const imageField = fileData.image?.[0] || null;
+
+    console.log("FILE FIELD:", fileField);   // 👈 add this once to inspect
+    console.log("IMAGE FIELD:", imageField); // 👈 add this once to inspect
+
     const uploadedFiles = {
-      file: fileData.file?.[0]?.path || null,
-      image: fileData.image?.[0]?.path || null,
+      file: fileField ? fileField.path : null,   // ✅ use path as-is
+      image: imageField ? imageField.path : null,
     };
 
-    const task = await Task.findById(taskId);
-    if (!task) return res.status(404).json({ error: "Task not found" });
-
-    // Ensure task is assigned to this user
-    if (task.assignedTo.toString() !== userId.toString()) {
-      return res.status(403).json({ error: "You are not assigned to this task." });
-    }
-
-
-    // Don't update if already completed
-    if (task.status === 'completed') {
-      return res.status(400).json({ error: "Task has already been completed." });
-    }
-
-    const user = await User.findById(userId);
-    if (!user || !user.batch) {
-      return res.status(404).json({ error: "User not found or not in a batch" });
-    }
-
-    const batch = await Batch.findById(user.batch);
-    if (!batch || !batch.interns.some(id => id.toString() === userId.toString())) {
-      return res.status(403).json({ error: "User is not an intern in this batch" });
-    }
-
-    // Save the task completion record
-    const taskCompletion = new TaskCompletion({
+    const taskCompletion = new TaskCompletionSchema({
       user: userId,
       task: taskId,
-
       comments,
       file: uploadedFiles.file,
       image: uploadedFiles.image,
+      methods,
+      results,
+      challenges,
+      timeSpent,
+      githubLink,
+      externalLink,
+      selfEvaluation,
     });
+
     await taskCompletion.save();
 
+    // update task + batch as you already do...
 
-    // Update the task status
-    task.status = 'completed';
-    await task.save();
-
-    // Update batch: increment completedTasks and manually update tasks[].status
-    const taskToUpdate = batch.tasks.find(t => t.taskId.toString() === task._id.toString());
-    if (taskToUpdate) {
-      taskToUpdate.status = 'completed';
-    }
-    batch.completedTasks += 1;
-    await batch.save();
-
-
-    res.status(201).json({ message: "Task submitted successfully.", taskCompletion });
-
+    res
+      .status(201)
+      .json({ message: "Task submitted successfully.", taskCompletion });
   } catch (error) {
     console.error("Error submitting task:", error);
-    res.status(500).json({ error: "An error occurred while submitting the task." });
+    res
+      .status(500)
+      .json({ error: "An error occurred while submitting the task." });
   }
 };
 
@@ -109,21 +97,19 @@ await connectDB();
 export const getTasksreports = async (req, res) => {
   await connectDB();
   try {
-    const tasks = await TaskCompletion.find()
+    const tasks = await TaskCompletionSchema.find()
       .sort({ createdAt: -1 })
-      .populate("user", "name")
+      .populate("user", "name email department role")
+      .populate("task", "title description taskType startDate endDate status");
+
+    // All fields from TaskCompletion (comments, methods, results, etc.)
+    // are included by default in `tasks`
     res.status(200).json(tasks);
   } catch (error) {
     console.error("Error fetching tasks:", error);
     res.status(500).json({ error: "An error occurred while fetching tasks." });
   }
 };
-
-// Export the Multer upload function for use in routes
-export { upload };
-
-
-
 
 export const reviewTaskSubmission = async (req, res) => {
   await connectDB();
@@ -132,27 +118,34 @@ export const reviewTaskSubmission = async (req, res) => {
 
     if (!userId || !taskId || !status) {
       console.warn("Missing required fields.");
-      return res.status(400).json({ error: "userId, taskId, and status are required." });
+      return res
+        .status(400)
+        .json({ error: "userId, taskId, and status are required." });
     }
-	console.log("Task: ",taskId);
-	console.log("userId: ",userId);
-	console.log("status: ",status);
+    console.log("Task: ", taskId);
+    console.log("userId: ", userId);
+    console.log("status: ", status);
     const task = await Task.findById(taskId);
     const user = await User.findById(userId);
-    const submission = await TaskCompletion.findOne({ task: taskId, user: userId });
+    const submission = await TaskCompletionSchema.findOne({
+      task: taskId,
+      user: userId,
+    });
 
     if (!task) {
       return res.status(404).json({ error: "Task not found." });
     }
-	if (!user) {
+    if (!user) {
       return res.status(404).json({ error: "user not found." });
     }
-	if (!submission) {
+    if (!submission) {
       return res.status(404).json({ error: "submission not found." });
     }
     if (submission.reviewed) {
       console.warn("Submission already reviewed.");
-      return res.status(400).json({ error: "This submission has already been reviewed." });
+      return res
+        .status(409)
+        .json({ error: "This submission has already been reviewed." });
     }
 
     const submittedOn = submission.createdAt;
@@ -167,7 +160,10 @@ export const reviewTaskSubmission = async (req, res) => {
       } else if (task.taskType === "Social") {
         rankChange = 1;
       }
-    } else if ((status === "Rejected" && task.taskType === "Social")||(!isBeforeDeadline && task.taskType === "Social")) {
+    } else if (
+      (status === "Rejected" && task.taskType === "Social") ||
+      (!isBeforeDeadline && task.taskType === "Social")
+    ) {
       rankChange = -1;
     } else {
       console.log("No rank change criteria matched.");
@@ -192,28 +188,30 @@ export const reviewTaskSubmission = async (req, res) => {
     res.status(200).json({
       message: `Task submission ${status.toLowerCase()} and user rank ${rankChange >= 0 ? "increased" : "decreased"} by ${Math.abs(rankChange)}.`,
     });
-
   } catch (error) {
     console.error("Error reviewing task:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
-
 export const deleteTaskSubmissionByTaskId = async (req, res) => {
   await connectDB();
   try {
-	console.log("Inside delete");
+    console.log("Inside delete");
     const { taskId } = req.params;
 
     if (!taskId) {
       return res.status(400).json({ error: "Task ID is required." });
     }
-	console.log("Taskid: ",taskId);
-    const submission = await TaskCompletion.findOneAndDelete({ task: taskId });
-	console.log("submission: ",submission);
+    console.log("Taskid: ", taskId);
+    const submission = await TaskCompletionSchema.findOneAndDelete({
+      task: taskId,
+    });
+    console.log("submission: ", submission);
     if (!submission) {
-      return res.status(404).json({ error: "No submission found for this task ID." });
+      return res
+        .status(404)
+        .json({ error: "No submission found for this task ID." });
     }
 
     // Optional: update the task and batch status if needed
@@ -228,7 +226,9 @@ export const deleteTaskSubmissionByTaskId = async (req, res) => {
     if (user && user.batch) {
       const batch = await Batch.findById(user.batch);
       if (batch) {
-        const taskToUpdate = batch.tasks.find(t => t.taskId.toString() === taskId);
+        const taskToUpdate = batch.tasks.find(
+          (t) => t.taskId.toString() === taskId
+        );
         if (taskToUpdate) {
           taskToUpdate.status = "pending";
         }
