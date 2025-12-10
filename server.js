@@ -111,7 +111,7 @@ const devCorsOptions = {
 
 
 app.use(express.json());
-app.use(cors(devCorsOptions));
+app.use(cors(corsOptions));
 
 // Routes
 app.use("/", RankRouter);
