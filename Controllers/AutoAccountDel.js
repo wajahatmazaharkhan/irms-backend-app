@@ -66,13 +66,6 @@ export const startCronJobs = () => {
       console.log(`${deleteResult.deletedCount} accounts deleted for exceeding the EndDate.`);
     }
 
-
-
-
-
-
-
-
       // 3. Check consecutive absences excluding leave dates
       const attendanceData = await Attendance.aggregate([
         {
