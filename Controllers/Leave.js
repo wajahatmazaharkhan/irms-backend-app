@@ -116,7 +116,6 @@ export const updateLeaveStatus = async (req, res) => {
 
     try {
       await axios.post(`${process.env.BACKEND_ENDPOINT}/send/notification`, notificationPayload);
-     
     } catch (notificationError) {
       console.error('Error sending notification:', notificationError.response?.data || notificationError.message);
     }
