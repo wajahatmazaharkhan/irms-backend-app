@@ -1,8 +1,8 @@
-import Issue from "../models/Issues.js";
+import Issues from "../Models/Issues";
 
 export const createIssue = async (req, res) => {
   try {
-    const issue = await Issue.create(req.body);
+    const issue = await Issues.create(req.body);
     res.status(201).json({
       success: true,
       message: "Issue submitted successfully",
