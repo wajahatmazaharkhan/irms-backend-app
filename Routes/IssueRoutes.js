@@ -1,5 +1,5 @@
 import express from "express";
-import { createIssue } from "../controllers/issue.controller.js";
+import { createIssue } from "../Controllers/issue.controller.js";
 
 const router = express.Router();
 
