@@ -22,6 +22,7 @@ import ticketRouter from "./Routes/ticketRoutes.js";
 import http from "http";
 import { Server } from "socket.io";
 import dashboardRoutes from "./Routes/DashboardRoutes.js";
+import IssueRoutes from "./Routes/IssueRoutes.js";
 
 dotenv.config({});
 
@@ -83,7 +84,6 @@ io.on("connection", (socket) => {
 // Middleware and Routes
 app.use("/uploads", express.static("projectimageuploads"));
 
-
 const allowedOrigins = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(",")
   : [];
@@ -137,6 +137,7 @@ app.use("/", HrInternAssociation);
 app.use("/api/batch", batchRouter);
 app.use("/ticket", ticketRouter);
 app.use("/dashboard", dashboardRoutes);
+app.use("/api/issues", IssueRoutes);
 
 // Test Endpoints
 app.post("/chat", (req, res) => {
