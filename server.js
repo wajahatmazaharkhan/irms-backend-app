@@ -23,15 +23,15 @@ import http from "http";
 import { Server } from "socket.io";
 import dashboardRoutes from "./Routes/DashboardRoutes.js";
 
-dotenv.config();
+dotenv.config({});
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: "*",
-    methods: ["GET", "POST", "DELETE", "PATCH", "HEAD", "PUT", "OPTIONS"]
-  }
+    methods: ["GET", "POST", "DELETE", "PATCH", "HEAD", "PUT", "OPTIONS"],
+  },
 });
 
 // Socket.IO Implementation
@@ -83,32 +83,38 @@ io.on("connection", (socket) => {
 // Middleware and Routes
 app.use("/uploads", express.static("projectimageuploads"));
 
+
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(",")
+  : [];
+
 const corsOptions = {
-  origin: ["https://www.scaleindia.org.in", "https://ims-frontend-app-sigma.vercel.app"],
+  origin: (origin, callback) => {
+    // Allow non-browser requests like postman,requestly
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    // Allow only whitelisted origins
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    // Block everything else
+    return callback(new Error("CORS blocked for origin", origin));
+  },
   credentials: true,
-  methods: "GET, POST, DELETE, PATCH, HEAD, PUT, OPTIONS",
+  method: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+
   allowedHeaders: [
     "Content-Type",
     "Authorization",
-    "Access-Control-Allow-Credentials",
     "cache-control",
+    "svix-id",
+    "svix-timestamp",
+    "svix-signature",
   ],
-  exposedHeaders: ["Authorization"],
 };
-
-const devCorsOptions = {
-  origin: "http://localhost:3000",
-  credentials: true,
-  methods: "GET, POST, DELETE, PATCH, HEAD, PUT, OPTIONS",
-  allowedHeaders: [
-    "Content-Type",
-    "Authorization",
-    "Access-Control-Allow-Credentials",
-    "cache-control",
-  ],
-  exposedHeaders: ["Authorization"],
-};
-
 
 app.use(express.json());
 app.use(cors(corsOptions));
