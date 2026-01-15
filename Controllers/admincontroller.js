@@ -61,7 +61,7 @@ export const updateUser = async (req, res) => {
 export const getAllUsers = async (req, res) => {
   await connectDB();
   try {
-    const users = await User.find();
+    const users = await User.find().populate("batch");
     if (users.length === 0) {
       return res.status(404).json({ message: "No users found" });
     }
