@@ -89,6 +89,10 @@ export const login = async (req, res) => {
             return res.status(500).json({ message: "Internal server error", success: false });
         }
 
+        // Update last login time
+        user.lastLoginAt = new Date();
+        await user.save();
+
         // Generate token
         let token;
         try {
@@ -116,6 +120,7 @@ export const login = async (req, res) => {
                 permissions: user.permissions,
                 department: user.department,
                 lastActiveAt: user.lastActiveAt,
+                lastLoginAt: user.lastLoginAt,
             },
         });
         console.log(`${user.name} just logged in to IISPPR!`);

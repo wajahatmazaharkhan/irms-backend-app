@@ -116,6 +116,10 @@ const UserSchema = new Schema({
     type: Date,
     default: null
   },
+  lastLoginAt: {
+    type: Date,
+    default: null
+  },
   totalTimeSpent: {
     type: Number,
     default: 0 // in seconds
