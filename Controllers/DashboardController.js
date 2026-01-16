@@ -14,6 +14,29 @@ export const getActiveUsers = async (req, res) => {
     }
 };
 
+// Get count of users active in the last 7 days (weekly active users)
+export const getWeeklyActiveUsers = async (req, res) => {
+    await connectDB();
+    try {
+        const days = parseInt(req.query.days) || 7;
+        const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+        
+        // Find users who were active in the last 7 days
+        const weeklyActiveUsers = await User.find({ 
+            lastActiveAt: { $gte: since } 
+        }).select('name email role department lastActiveAt');
+        
+        res.json({ 
+            weeklyActiveUsers: weeklyActiveUsers.length, 
+            users: weeklyActiveUsers,
+            period: `${days} days`,
+            since: since 
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching weekly active users', error: error.message });
+    }
+};
+
 // Get total time spent by each user
 export const getTimeSpentByUsers = async (req, res) => {
     await connectDB();
