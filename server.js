@@ -23,6 +23,7 @@ import http from "http";
 import { Server } from "socket.io";
 import dashboardRoutes from "./Routes/DashboardRoutes.js";
 import IssueRoutes from "./Routes/IssueRoutes.js";
+import { trackFeatureUsage } from "./Middlewares/FeatureTracking.js";
 
 dotenv.config({});
 
@@ -118,6 +119,7 @@ const corsOptions = {
 
 app.use(express.json());
 app.use(cors(corsOptions));
+app.use(trackFeatureUsage); // Track feature usage for analytics
 
 // Routes
 app.use("/", RankRouter);
