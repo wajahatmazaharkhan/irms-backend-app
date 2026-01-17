@@ -14,7 +14,8 @@ import {
   removeMemberFromTeam,
   moveMemberBetweenTeams,
   updateTeam,
-  deleteTeam
+  deleteTeam,
+  getAssignedBatcheswithUserIds,
 } from "../Controllers/batchController.js";
 import { ensureAuthenticated } from "../Middlewares/Auth.js";
 
@@ -24,19 +25,33 @@ batchRouter.get("/get-summary", getBatchesWithCounts);
 batchRouter.get("/get-by-hr/:hrId", getByHr);
 batchRouter.get("/get/:id", getBatchById);
 batchRouter.get("/get-ids", getBatchesWithHrAndInternIDs);
+batchRouter.get(
+  "/get-assigned-batches-with-users/:userId",
+  getAssignedBatcheswithUserIds
+);
 
 batchRouter.get("/batch-requests/:batchId", getUsersByBatchId);
 batchRouter.get("/batch-requests", getAllPendingBatchApprovals);
 batchRouter.patch("/approve-batch/:userId", approveUserBatch);
 batchRouter.patch("/reject-batch/:userId", rejectUserBatch);
 
-
 batchRouter.post("/:batchId/teams", ensureAuthenticated, createTeam);
-batchRouter.post("/:batchId/teams/:teamId/members", ensureAuthenticated, addMembersToTeam);
-batchRouter.delete("/:batchId/teams/:teamId/members/:memberId", ensureAuthenticated, removeMemberFromTeam);
-batchRouter.post("/:batchId/teams/move-member", ensureAuthenticated, moveMemberBetweenTeams);
+batchRouter.post(
+  "/:batchId/teams/:teamId/members",
+  ensureAuthenticated,
+  addMembersToTeam
+);
+batchRouter.delete(
+  "/:batchId/teams/:teamId/members/:memberId",
+  ensureAuthenticated,
+  removeMemberFromTeam
+);
+batchRouter.post(
+  "/:batchId/teams/move-member",
+  ensureAuthenticated,
+  moveMemberBetweenTeams
+);
 batchRouter.patch("/:batchId/teams/:teamId", ensureAuthenticated, updateTeam);
 batchRouter.delete("/:batchId/teams/:teamId", ensureAuthenticated, deleteTeam);
-
 
 export default batchRouter;
