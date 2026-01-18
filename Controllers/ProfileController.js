@@ -1,14 +1,14 @@
 import User from "../Models/User.js";
+import { ApiError } from "../src/utils/apiError.js";
 
 export const updateProfile = async (req, res) => {
   try {
+    console.log(req.file);
+    console.log(req.body);
     // Try to get the user id from auth middleware first,
     // otherwise fall back to body/params if you prefer that style.
     const userId =
-      req.user?.id ||
-      req.user?._id ||
-      req.body.userId ||
-      req.params.id;
+      req.user?.id || req.user?._id || req.body.userId || req.params.id;
 
     if (!userId) {
       return res.status(400).json({
@@ -21,12 +21,13 @@ export const updateProfile = async (req, res) => {
     const {
       fullName,
       email,
-      studying,     // not used in model (ignored)
+      studying, // not used in model (ignored)
       currentRole,
       phoneNumber,
-      countryCode,  // not used in model (ignored)
-      profilePicture,
-      bio,          // not used in model (ignored)
+      countryCode, // not used in model (ignored)
+      linkedInURL,
+      bio,
+      profileCompletion,
     } = req.body;
 
     const updates = {};
@@ -51,11 +52,32 @@ export const updateProfile = async (req, res) => {
       updates.mnumber = phoneNumber.trim();
     }
 
-    // Profile picture: from form field or (optionally) an uploaded file
-    // If you later use multer for file upload:
-    // if (req.file) updates.profilePicture = `/uploads/${req.file.filename}`;
-    if (typeof profilePicture === "string" && profilePicture.trim() !== "") {
+    // Priority 1: Uploaded image (Cloudinary)
+    if (req.file) {
+      updates.profilePicture = req.file.path;
+    }
+    // Priority 2: Existing image URL (NO new upload)
+    else if (
+      typeof profilePicture === "string" &&
+      profilePicture.trim() !== ""
+    ) {
       updates.profilePicture = profilePicture.trim();
+    }
+
+    if (typeof linkedInURL === "string" && linkedInURL.trim() !== "") {
+      updates.linkedInURL = linkedInURL.trim();
+    }
+
+    if (typeof bio === "string" && bio.trim() !== "") {
+      updates.bio = bio.trim();
+    }
+
+    if (profileCompletion !== undefined) {
+      const completion = Number(profileCompletion);
+
+      if (!Number.isNaN(completion)) {
+        updates.profileCompletion = completion;
+      }
     }
 
     // NOTE: `bio`, `studying`, `countryCode` are NOT in your User schema,
@@ -88,10 +110,8 @@ export const updateProfile = async (req, res) => {
     });
   } catch (error) {
     console.error("🚀 ~ updateProfile ~ error:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Error updating profile.",
-    });
+    return res
+      .status(500)
+      .json(new ApiError(500, "internal server error", error));
   }
 };
-
