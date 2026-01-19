@@ -23,6 +23,7 @@ import http from "http";
 import { Server } from "socket.io";
 import dashboardRoutes from "./Routes/DashboardRoutes.js";
 import IssueRoutes from "./Routes/IssueRoutes.js";
+import activeHoursRoutes from "./Routes/ActiveHoursRoutes.js";
 
 dotenv.config({});
 
@@ -138,6 +139,7 @@ app.use("/api/batch", batchRouter);
 app.use("/ticket", ticketRouter);
 app.use("/dashboard", dashboardRoutes);
 app.use("/api/issues", IssueRoutes);
+app.use("/active-hours", activeHoursRoutes);
 
 // Test Endpoints
 app.post("/chat", (req, res) => {

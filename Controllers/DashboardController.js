@@ -1,4 +1,5 @@
 import User from '../Models/User.js';
+import mongoose from 'mongoose';
 import connectDB from '../src/db/index.js';
 
 // Get count of active users in the last X minutes (default 10)
