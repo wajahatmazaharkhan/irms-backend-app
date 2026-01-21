@@ -125,17 +125,67 @@ export const login = async (req, res) => {
     // Generate token
     let token;
     try {
-      token = jwt.sign(
-        {
-          email: user.email,
-          id: user._id,
-          role: user.role,
-          permissions: user.permissions,
-          isVerified: user.isVerified,
-        },
-        secretKey,
-        { expiresIn: "30d" }
-      );
+        const { email, password } = req.body;
+
+        // Check if user exists
+        let user;
+        try {
+            user = await User.findOne({ email });
+            if (!user) {
+                return res.status(403).json({ message: "Invalid email or password", success: false });
+            }
+        } catch (error) {
+            console.error("Error finding user during login:", error);
+            return res.status(500).json({ message: "Internal server error", success: false });
+        }
+
+        // Verify password
+        let isPassEqual;
+        try {
+            isPassEqual = await bcrypt.compare(password, user.password);
+            if (!isPassEqual) {
+                return res.status(403).json({ message: "Invalid email or password", success: false });
+            }
+        } catch (error) {
+            console.error("Error comparing password during login:", error);
+            return res.status(500).json({ message: "Internal server error", success: false });
+        }
+
+        // Update last login time
+        user.lastLoginAt = new Date();
+        await user.save();
+
+        // Generate token
+        let token;
+        try {
+            token = jwt.sign(
+                { email: user.email, id: user._id, role: user.role, permissions: user.permissions, isVerified: user.isVerified },
+                secretKey,
+                { expiresIn: "30d" }
+            );
+        } catch (error) {
+            console.error("Error generating token during login:", error);
+            return res.status(500).json({ message: "Internal server error", success: false });
+        }
+
+        res.status(200).json({
+            message: "Login successful",
+            success: true,
+            token,
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                isAdmin: user.isAdmin,
+                isVerified: user.isVerified,
+                role: user.role,
+                permissions: user.permissions,
+                department: user.department,
+                lastActiveAt: user.lastActiveAt,
+                lastLoginAt: user.lastLoginAt,
+            },
+        });
+        console.log(`${user.name} just logged in to IISPPR!`);
     } catch (error) {
       console.error("Error generating token during login:", error);
       return res
