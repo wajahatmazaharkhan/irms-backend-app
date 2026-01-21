@@ -28,9 +28,14 @@ dotenv.config({});
 
 const app = express();
 const server = http.createServer(app);
+
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(",").map((origin) => origin.trim())
+  : [];
+
 const io = new Server(server, {
   cors: {
-    origin: "*",
+    origin: allowedOrigins,
     methods: ["GET", "POST", "DELETE", "PATCH", "HEAD", "PUT", "OPTIONS"],
   },
 });
@@ -84,28 +89,19 @@ io.on("connection", (socket) => {
 // Middleware and Routes
 app.use("/uploads", express.static("projectimageuploads"));
 
-const allowedOrigins = process.env.CORS_ORIGIN
-  ? process.env.CORS_ORIGIN.split(",")
-  : [];
-
 const corsOptions = {
   origin: (origin, callback) => {
-    // Allow non-browser requests like postman,requestly
-    if (!origin) {
-      return callback(null, true);
-    }
+    if (!origin) return callback(null, true); // Postman, server-to-server
 
-    // Allow only whitelisted origins
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
 
-    // Block everything else
-    return callback(new Error("CORS blocked for origin", origin));
+    console.error("Blocked by CORS:", origin);
+    return callback(new Error("Not allowed by CORS"));
   },
   credentials: true,
-  method: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: [
     "Content-Type",
     "Authorization",
@@ -118,6 +114,7 @@ const corsOptions = {
 
 app.use(express.json());
 app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 
 // Routes
 app.use("/", RankRouter);
@@ -168,6 +165,7 @@ await connectDB()
   .then(() => {
     server.listen(PORT, () => {
       console.log(`Server is running on port: ${PORT}`);
+      console.log("Allowed CORS Origins:", allowedOrigins);
     });
 
     app.on("error", (error) => {
