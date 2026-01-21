@@ -36,15 +36,27 @@ const UserSchema = new Schema({
   },
   profilePicture: {
     type: String,
-    default: "",
+    default:
+      "https://res.cloudinary.com/drlkjy26h/image/upload/v1768716217/profile_pics/yjxbtfessdqht3mqowar.png",
   },
   linkedInURL: {
     type: String,
     default: "",
   },
+  bio: {
+    type: String,
+    default: "",
+  },
   department: {
     type: String,
-    enum: ["research", "development", "hr", "communication", "courseCommunication", "course"],
+    enum: [
+      "research",
+      "development",
+      "hr",
+      "communication",
+      "courseCommunication",
+      "course",
+    ],
     default: "Not Assigned",
   },
   notifications: {
@@ -77,11 +89,11 @@ const UserSchema = new Schema({
 
   resetPasswordOtp: {
     type: String,
-    default: null
+    default: null,
   },
   resetPasswordExpires: {
     type: Date,
-    default: null
+    default: null,
   },
   permissions: {
     type: [
@@ -98,23 +110,27 @@ const UserSchema = new Schema({
           "employee_management",
           "leave_approval",
           "attendance",
-          "recruitment"
-        ]
-      }
+          "recruitment",
+        ],
+      },
     ],
-    default: []
+    default: [],
+  },
+  profileCompletion: {
+    type: Number,
+    default: 0,
   },
   isVerified: {
     type: Boolean,
-    default: false
+    default: false,
   },
   totalPoints: {
     type: Number,
-    default: 0
+    default: 0,
   },
   lastActiveAt: {
     type: Date,
-    default: null
+    default: null,
   },
   lastLoginAt: {
     type: Date,
@@ -122,9 +138,8 @@ const UserSchema = new Schema({
   },
   totalTimeSpent: {
     type: Number,
-    default: 0 // in seconds
-  }
-
+    default: 0, // in seconds
+  },
 });
 
 export default mongoose.model("User", UserSchema);

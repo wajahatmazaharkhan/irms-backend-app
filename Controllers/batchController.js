@@ -1,8 +1,10 @@
 import Batch from "../Models/batchModel.js";
 import HRIntern from "../Models/HrInternAssociation.js";
-import mongoose from 'mongoose';
-import User from '../Models/User.js';
+import mongoose from "mongoose";
+import User from "../Models/User.js";
 import connectDB from "../src/db/index.js";
+import { ApiError } from "../src/utils/apiError.js";
+import { ApiResponse } from "../src/utils/apiResponse.js";
 
 export const createBatch = async (req, res) => {
   await connectDB();
@@ -10,7 +12,9 @@ export const createBatch = async (req, res) => {
     const { name, startDate, endDate, interns = [], hr = [] } = req.body;
 
     if (!name || !startDate || !endDate) {
-      return res.status(400).json({ error: "Batch name, start date, and end date are required." });
+      return res
+        .status(400)
+        .json({ error: "Batch name, start date, and end date are required." });
     }
 
     // Check for duplicate batch (by name + endDate)
@@ -45,7 +49,9 @@ export const createBatch = async (req, res) => {
         { interns: { $in: interns } },
         { $pull: { interns: { $in: interns } } }
       );
-      console.log(`Removed interns ${interns.join(", ")} from previous batches`);
+      console.log(
+        `Removed interns ${interns.join(", ")} from previous batches`
+      );
 
       // Clear outdated batch refs from User
       await User.updateMany(
@@ -75,7 +81,6 @@ export const createBatch = async (req, res) => {
       message: "Batch created successfully",
       data: savedBatch,
     });
-
   } catch (error) {
     console.error("Error creating batch:", error);
     return res.status(500).json({
@@ -85,12 +90,9 @@ export const createBatch = async (req, res) => {
   }
 };
 
-
-
 export const getBatchesWithCounts = async (req, res) => {
   await connectDB();
   try {
-
     const batches = await Batch.find()
       .populate("interns", "_id")
       .populate({
@@ -109,7 +111,7 @@ export const getBatchesWithCounts = async (req, res) => {
       endDate: batch.endDate,
       totalInterns: Array.isArray(batch.interns) ? batch.interns.length : 0,
       totalHR: Array.isArray(batch.hr)
-        ? batch.hr.filter(h => h.hrId).length
+        ? batch.hr.filter((h) => h.hrId).length
         : 0,
     }));
 
@@ -119,7 +121,6 @@ export const getBatchesWithCounts = async (req, res) => {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
 
 // Get batch by ID
 export const getBatchById = async (req, res) => {
@@ -145,11 +146,11 @@ export const getBatchById = async (req, res) => {
     // Transform the data before sending to frontend
     const responseData = {
       ...batch._doc,
-      hr: batch.hr.map(hrIntern => ({
+      hr: batch.hr.map((hrIntern) => ({
         _id: hrIntern._id,
         hrId: hrIntern.hrId, // Already populated
-        internIds: hrIntern.internIds // Not populated here
-      }))
+        internIds: hrIntern.internIds, // Not populated here
+      })),
     };
 
     return res.status(200).json(responseData);
@@ -217,7 +218,7 @@ export const updateBatch = async (req, res) => {
         updatedHrInternIds.push(hrIntern._id.toString());
       }
 
-      const existingHrIds = batch.hr.map(i => i.toString()).sort();
+      const existingHrIds = batch.hr.map((i) => i.toString()).sort();
       const incomingHrIds = [...updatedHrInternIds].sort();
 
       if (JSON.stringify(existingHrIds) !== JSON.stringify(incomingHrIds)) {
@@ -232,23 +233,29 @@ export const updateBatch = async (req, res) => {
       isModified = true;
     }
 
-    if (startDate && new Date(startDate).getTime() !== new Date(batch.startDate).getTime()) {
+    if (
+      startDate &&
+      new Date(startDate).getTime() !== new Date(batch.startDate).getTime()
+    ) {
       batch.startDate = new Date(startDate);
       isModified = true;
     }
 
-    if (endDate && new Date(endDate).getTime() !== new Date(batch.endDate).getTime()) {
+    if (
+      endDate &&
+      new Date(endDate).getTime() !== new Date(batch.endDate).getTime()
+    ) {
       batch.endDate = new Date(endDate);
       isModified = true;
     }
 
     //Handle interns change
-    if ('interns' in req.body && Array.isArray(interns)) {
-      const oldInterns = batch.interns.map(i => i.toString());
-      const newInterns = interns.map(i => i.toString());
+    if ("interns" in req.body && Array.isArray(interns)) {
+      const oldInterns = batch.interns.map((i) => i.toString());
+      const newInterns = interns.map((i) => i.toString());
 
-      const addedInterns = newInterns.filter(i => !oldInterns.includes(i));
-      const removedInterns = oldInterns.filter(i => !newInterns.includes(i));
+      const addedInterns = newInterns.filter((i) => !oldInterns.includes(i));
+      const removedInterns = oldInterns.filter((i) => !newInterns.includes(i));
 
       if (addedInterns.length > 0) {
         // Remove added interns from all other batches
@@ -256,7 +263,9 @@ export const updateBatch = async (req, res) => {
           { _id: { $ne: batch._id }, interns: { $in: addedInterns } },
           { $pull: { interns: { $in: addedInterns } } }
         );
-        console.log(`Removed ${addedInterns.length} interns from other batches`);
+        console.log(
+          `Removed ${addedInterns.length} interns from other batches`
+        );
 
         // Clear stale batch ref
         await User.updateMany(
@@ -269,7 +278,9 @@ export const updateBatch = async (req, res) => {
           { _id: { $in: addedInterns } },
           { $set: { batch: batch._id } }
         );
-        console.log(`Assigned ${addedInterns.length} intern(s) to batch ${batch.name}`);
+        console.log(
+          `Assigned ${addedInterns.length} intern(s) to batch ${batch.name}`
+        );
       }
 
       if (removedInterns.length > 0) {
@@ -277,13 +288,17 @@ export const updateBatch = async (req, res) => {
           { _id: { $in: removedInterns }, batch: batch._id },
           { $unset: { batch: "" } }
         );
-        console.log(`Removed ${removedInterns.length} intern(s) from batch ${batch.name}`);
+        console.log(
+          `Removed ${removedInterns.length} intern(s) from batch ${batch.name}`
+        );
       }
 
       const existingInternIds = oldInterns.sort();
       const incomingInternIds = newInterns.sort();
 
-      if (JSON.stringify(existingInternIds) !== JSON.stringify(incomingInternIds)) {
+      if (
+        JSON.stringify(existingInternIds) !== JSON.stringify(incomingInternIds)
+      ) {
         batch.interns = interns;
         isModified = true;
       }
@@ -302,7 +317,6 @@ export const updateBatch = async (req, res) => {
         data: batch,
       });
     }
-
   } catch (error) {
     console.error("Error updating batch:", error);
     return res.status(500).json({
@@ -316,17 +330,21 @@ export const getBatchProgress = async (req, res) => {
   await connectDB();
   try {
     const batches = await Batch.find()
-      .populate('tasks.taskId', 'title description status')
-      .populate('tasks.assignedTo', 'name email');
+      .populate("tasks.taskId", "title description status")
+      .populate("tasks.assignedTo", "name email");
 
     const progressData = batches.map((batch) => {
-      const progress = batch.allTasks > 0 ? (batch.completedTasks / batch.allTasks) * 100 : 0;
+      const progress =
+        batch.allTasks > 0 ? (batch.completedTasks / batch.allTasks) * 100 : 0;
 
-      const taskStats = batch.tasks.reduce((acc, task) => {
-        const actualStatus = task.taskId?.status || 'pending'; // rely only on real status from task
-        acc[actualStatus] = (acc[actualStatus] || 0) + 1;
-        return acc;
-      }, { pending: 0, completed: 0 });
+      const taskStats = batch.tasks.reduce(
+        (acc, task) => {
+          const actualStatus = task.taskId?.status || "pending"; // rely only on real status from task
+          acc[actualStatus] = (acc[actualStatus] || 0) + 1;
+          return acc;
+        },
+        { pending: 0, completed: 0 }
+      );
 
       return {
         _id: batch._id,
@@ -337,17 +355,17 @@ export const getBatchProgress = async (req, res) => {
         completedTasks: batch.completedTasks,
         progress: parseFloat(progress.toFixed(2)),
         taskStats,
-        tasks: batch.tasks.map(task => ({
+        tasks: batch.tasks.map((task) => ({
           taskId: task.taskId?._id || task.taskId,
           title: task.taskId?.title,
           description: task.taskId?.description,
-          status: task.taskId?.status || 'pending',  // always show latest
+          status: task.taskId?.status || "pending", // always show latest
           assignedTo: {
             _id: task.assignedTo?._id,
             name: task.assignedTo?.name,
-            email: task.assignedTo?.email
-          }
-        }))
+            email: task.assignedTo?.email,
+          },
+        })),
       };
     });
     res.status(200).json(progressData);
@@ -364,7 +382,7 @@ export const getAvailableInterns = async (req, res) => {
   try {
     // Step 1: Get all batches
     const existingBatches = await Batch.find({}, "_id");
-    const existingBatchIds = existingBatches.map(b => b._id.toString());
+    const existingBatchIds = existingBatches.map((b) => b._id.toString());
 
     // Step 2: Get interns where batch is:
     // - null
@@ -373,8 +391,8 @@ export const getAvailableInterns = async (req, res) => {
       { $match: { role: "intern" } },
       {
         $project: {
-          id: "$_id",      // Alias _id to id
-          _id: 0,          // Exclude original _id
+          id: "$_id", // Alias _id to id
+          _id: 0, // Exclude original _id
           name: 1,
           email: 1,
           batch: 1,
@@ -383,26 +401,24 @@ export const getAvailableInterns = async (req, res) => {
       },
     ]);
 
-
-    const availableInterns = allInterns.filter(intern =>
-      intern.batch === null ||
-      !existingBatchIds.includes(intern.batch?.toString())
+    const availableInterns = allInterns.filter(
+      (intern) =>
+        intern.batch === null ||
+        !existingBatchIds.includes(intern.batch?.toString())
     );
 
     res.status(200).json({
       message: "Available interns fetched successfully",
-      data: availableInterns
+      data: availableInterns,
     });
-
   } catch (error) {
     console.error("Error fetching available interns:", error);
     res.status(500).json({
       message: "Internal Server Error",
-      error: error.message
+      error: error.message,
     });
   }
 };
-
 
 export const getBatchesWithHrAndInternIDs = async (req, res) => {
   await connectDB();
@@ -506,10 +522,11 @@ export const getByHr = async (req, res) => {
     res.status(200).json(response);
   } catch (error) {
     console.error("Error fetching batches by HR:", error);
-    res.status(500).json({ error: "Internal Server Error", details: error.message });
+    res
+      .status(500)
+      .json({ error: "Internal Server Error", details: error.message });
   }
 };
-
 
 // GET /batch-requests/:batchId
 export const getUsersByBatchId = async (req, res) => {
@@ -533,7 +550,6 @@ export const getUsersByBatchId = async (req, res) => {
   }
 };
 
-
 // GET /batch-requests
 export const getAllPendingBatchApprovals = async (req, res) => {
   await connectDB();
@@ -551,7 +567,6 @@ export const getAllPendingBatchApprovals = async (req, res) => {
   }
 };
 
-
 // PATCH /approve-batch/:userId
 export const approveUserBatch = async (req, res) => {
   await connectDB();
@@ -565,7 +580,9 @@ export const approveUserBatch = async (req, res) => {
     const user = await User.findById(userId);
 
     if (!user || !user.unapprovedBatch) {
-      return res.status(404).json({ message: "User or unapproved batch not found" });
+      return res
+        .status(404)
+        .json({ message: "User or unapproved batch not found" });
     }
 
     user.batch = user.unapprovedBatch;
@@ -581,7 +598,6 @@ export const approveUserBatch = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-
 
 // PATCH /reject-batch/:userId
 
@@ -602,7 +618,9 @@ export const rejectUserBatch = async (req, res) => {
 
     await User.findByIdAndDelete(userId);
 
-    return res.status(200).json({ message: "User rejected and deleted successfully" });
+    return res
+      .status(200)
+      .json({ message: "User rejected and deleted successfully" });
   } catch (error) {
     console.error("Error rejecting user batch request:", error);
     return res.status(500).json({ message: "Internal server error" });
@@ -612,7 +630,6 @@ export const rejectUserBatch = async (req, res) => {
 export const createTeam = async (req, res) => {
   await connectDB();
   try {
-
     if (!req.user || req.user.role !== "hr") {
       return res.status(403).json({ error: "Only HRs can create teams." });
     }
@@ -623,20 +640,26 @@ export const createTeam = async (req, res) => {
     if (!batch) return res.status(404).json({ error: "Batch not found." });
 
     const invalidMembers = members.filter(
-      m => !batch.interns.map(i => i.toString()).includes(m)
+      (m) => !batch.interns.map((i) => i.toString()).includes(m)
     );
     if (invalidMembers.length > 0) {
-      return res.status(400).json({ error: "Some members are not part of this batch.", invalidMembers });
+      return res.status(400).json({
+        error: "Some members are not part of this batch.",
+        invalidMembers,
+      });
     }
     batch.teams.push({ name, members, createdBy: req.user.id });
     await batch.save();
-    return res.status(201).json({ message: "Team created successfully.", teams: batch.teams });
+    return res
+      .status(201)
+      .json({ message: "Team created successfully.", teams: batch.teams });
   } catch (error) {
     console.error("Error creating team:", error);
-    return res.status(500).json({ error: "Internal Server Error", details: error.message });
+    return res
+      .status(500)
+      .json({ error: "Internal Server Error", details: error.message });
   }
 };
-
 
 export const addMembersToTeam = async (req, res) => {
   await connectDB();
@@ -649,14 +672,17 @@ export const addMembersToTeam = async (req, res) => {
     if (!team) return res.status(404).json({ error: "Team not found." });
 
     const invalidMembers = members.filter(
-      m => !batch.interns.map(i => i.toString()).includes(m)
+      (m) => !batch.interns.map((i) => i.toString()).includes(m)
     );
     if (invalidMembers.length > 0) {
-      return res.status(400).json({ error: "Some members are not part of this batch.", invalidMembers });
+      return res.status(400).json({
+        error: "Some members are not part of this batch.",
+        invalidMembers,
+      });
     }
 
-    members.forEach(m => {
-      if (!team.members.map(mem => mem.toString()).includes(m)) {
+    members.forEach((m) => {
+      if (!team.members.map((mem) => mem.toString()).includes(m)) {
         team.members.push(m);
       }
     });
@@ -664,10 +690,11 @@ export const addMembersToTeam = async (req, res) => {
     return res.status(200).json({ message: "Members added to team.", team });
   } catch (error) {
     console.error("Error adding members to team:", error);
-    return res.status(500).json({ error: "Internal Server Error", details: error.message });
+    return res
+      .status(500)
+      .json({ error: "Internal Server Error", details: error.message });
   }
 };
-
 
 export const removeMemberFromTeam = async (req, res) => {
   await connectDB();
@@ -677,15 +704,16 @@ export const removeMemberFromTeam = async (req, res) => {
     if (!batch) return res.status(404).json({ error: "Batch not found." });
     const team = batch.teams.id(teamId);
     if (!team) return res.status(404).json({ error: "Team not found." });
-    team.members = team.members.filter(m => m.toString() !== memberId);
+    team.members = team.members.filter((m) => m.toString() !== memberId);
     await batch.save();
     return res.status(200).json({ message: "Member removed from team.", team });
   } catch (error) {
     console.error("Error removing member from team:", error);
-    return res.status(500).json({ error: "Internal Server Error", details: error.message });
+    return res
+      .status(500)
+      .json({ error: "Internal Server Error", details: error.message });
   }
 };
-
 
 export const moveMemberBetweenTeams = async (req, res) => {
   await connectDB();
@@ -695,21 +723,27 @@ export const moveMemberBetweenTeams = async (req, res) => {
     if (!batch) return res.status(404).json({ error: "Batch not found." });
     const fromTeam = batch.teams.id(fromTeamId);
     const toTeam = batch.teams.id(toTeamId);
-    if (!fromTeam || !toTeam) return res.status(404).json({ error: "One or both teams not found." });
+    if (!fromTeam || !toTeam)
+      return res.status(404).json({ error: "One or both teams not found." });
 
-    fromTeam.members = fromTeam.members.filter(m => m.toString() !== memberId);
+    fromTeam.members = fromTeam.members.filter(
+      (m) => m.toString() !== memberId
+    );
 
-    if (!toTeam.members.map(m => m.toString()).includes(memberId)) {
+    if (!toTeam.members.map((m) => m.toString()).includes(memberId)) {
       toTeam.members.push(memberId);
     }
     await batch.save();
-    return res.status(200).json({ message: "Member moved between teams.", fromTeam, toTeam });
+    return res
+      .status(200)
+      .json({ message: "Member moved between teams.", fromTeam, toTeam });
   } catch (error) {
     console.error("Error moving member between teams:", error);
-    return res.status(500).json({ error: "Internal Server Error", details: error.message });
+    return res
+      .status(500)
+      .json({ error: "Internal Server Error", details: error.message });
   }
 };
-
 
 export const updateTeam = async (req, res) => {
   await connectDB();
@@ -725,10 +759,11 @@ export const updateTeam = async (req, res) => {
     return res.status(200).json({ message: "Team updated.", team });
   } catch (error) {
     console.error("Error updating team:", error);
-    return res.status(500).json({ error: "Internal Server Error", details: error.message });
+    return res
+      .status(500)
+      .json({ error: "Internal Server Error", details: error.message });
   }
 };
-
 
 export const deleteTeam = async (req, res) => {
   await connectDB();
@@ -736,11 +771,39 @@ export const deleteTeam = async (req, res) => {
     const { batchId, teamId } = req.params;
     const batch = await Batch.findById(batchId);
     if (!batch) return res.status(404).json({ error: "Batch not found." });
-    batch.teams = batch.teams.filter(t => t._id.toString() !== teamId);
+    batch.teams = batch.teams.filter((t) => t._id.toString() !== teamId);
     await batch.save();
     return res.status(200).json({ message: "Team deleted." });
   } catch (error) {
     console.error("Error deleting team:", error);
-    return res.status(500).json({ error: "Internal Server Error", details: error.message });
+    return res
+      .status(500)
+      .json({ error: "Internal Server Error", details: error.message });
+  }
+};
+
+export const getAssignedBatcheswithUserIds = async (req, res) => {
+  // connect db for serverless env
+  await connectDB();
+  try {
+    const { userId } = req.params;
+    // get hr id from user id
+    const hr = await HRIntern.findOne({ hrId: userId }).select("_id");
+    if (!hr)
+      return res.status(404).json(new ApiError(404, "HR intern not found"));
+    // get all batches
+    const hrId = hr._id;
+    const batches = await Batch.find().select("name interns hr").lean();
+    // filter hr assigned batches
+    const hrAssignedBatches = batches.filter((batch) =>
+      batch.hr.some((h) => h.toString() === hrId.toString())
+    );
+    // return document
+    return res.status(200).json(new ApiResponse(200, hrAssignedBatches, "ok"));
+  } catch (error) {
+    console.log("🚀 ~ getAssignedBatcheswithUserIds ~ error:", error);
+    return res
+      .status(500)
+      .json(new ApiError(500, "error getting hr batches", error, null));
   }
 };
