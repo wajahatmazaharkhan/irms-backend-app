@@ -168,7 +168,7 @@ export const login = async (req, res) => {
             return res.status(500).json({ message: "Internal server error", success: false });
         }
 
-        res.status(200).json({
+        return res.status(200).json({
             message: "Login successful",
             success: true,
             token,
