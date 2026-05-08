@@ -10,7 +10,6 @@ dotenv.config();
 const secretKey = process.env.JWT_SECRET;
 
 export const signup = async (req, res) => {
-  await connectDB();
   try {
     const {
       name,
@@ -22,6 +21,8 @@ export const signup = async (req, res) => {
       department,
       startDate,
     } = req.body;
+
+    console.log('req.body\n',req.body);
 
     // Validate fields
     if (
@@ -73,6 +74,7 @@ export const signup = async (req, res) => {
       department,
       startDate,
       role,
+      isVerified:true,
     });
 
     await newUser.save();

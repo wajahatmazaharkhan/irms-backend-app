@@ -187,7 +187,6 @@ export const createBatch = async (req, res) => {
 // Get all batches with counts
 export const getBatchesWithCounts = async (req, res) => {
   await connectDB();
-  console.log("== getBatchesWithCounts controller invoked ==");
 
   try {
     // Sanity check: confirm DB is accessible
