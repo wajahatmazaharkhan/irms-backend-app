@@ -74,7 +74,7 @@ export const signup = async (req, res) => {
       department,
       startDate,
       role,
-      // isVerified:true,
+      isVerified:true,
     });
 
     await newUser.save();
