@@ -20,9 +20,40 @@ export const signup = async (req, res) => {
       EndDate,
       department,
       startDate,
+      turnstileToken,
     } = req.body;
 
-    console.log('req.body\n',req.body);
+    console.log("req.body\n", req.body);
+
+    if (!turnstileToken) {
+      return res.status(400).json({
+        message: "Captcha verification required",
+        success: false,
+      });
+    }
+
+    const formData = new FormData();
+
+    formData.append("secret", process.env.TURNSTILE_SECRET_KEY);
+
+    formData.append("response", turnstileToken);
+
+    const cloudflareRes = await fetch(
+      "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+      {
+        method: "POST",
+        body: formData,
+      },
+    );
+
+    const captchaData = await cloudflareRes.json();
+
+    if (!captchaData.success) {
+      return res.status(400).json({
+        message: "Human verification failed",
+        success: false,
+      });
+    }
 
     // Validate fields
     if (
@@ -74,7 +105,7 @@ export const signup = async (req, res) => {
       department,
       startDate,
       role,
-      isVerified:true,
+      isVerified: true,
     });
 
     await newUser.save();
@@ -88,9 +119,38 @@ export const signup = async (req, res) => {
 };
 
 export const login = async (req, res) => {
-  await connectDB();
   try {
-    const { email, password } = req.body;
+    const { email, password, turnstileToken } = req.body;
+
+    if (!turnstileToken) {
+      return res.status(400).json({
+        message: "Captcha token missing",
+        success: false,
+      });
+    }
+
+    const formData = new FormData();
+
+    formData.append("secret", process.env.TURNSTILE_SECRET_KEY);
+
+    formData.append("response", turnstileToken);
+
+    const cloudflareRes = await fetch(
+      "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+      {
+        method: "POST",
+        body: formData,
+      },
+    );
+
+    const captchaData = await cloudflareRes.json();
+
+    if (!captchaData.success) {
+      return res.status(400).json({
+        message: "Human verification failed",
+        success: false,
+      });
+    }
 
     // Check if user exists
     let user;
@@ -127,67 +187,83 @@ export const login = async (req, res) => {
     // Generate token
     let token;
     try {
-        const { email, password } = req.body;
+      const { email, password } = req.body;
 
-        // Check if user exists
-        let user;
-        try {
-            user = await User.findOne({ email });
-            if (!user) {
-                return res.status(403).json({ message: "Invalid email or password", success: false });
-            }
-        } catch (error) {
-            console.error("Error finding user during login:", error);
-            return res.status(500).json({ message: "Internal server error", success: false });
+      // Check if user exists
+      let user;
+      try {
+        user = await User.findOne({ email });
+        if (!user) {
+          return res
+            .status(403)
+            .json({ message: "Invalid email or password", success: false });
         }
+      } catch (error) {
+        console.error("Error finding user during login:", error);
+        return res
+          .status(500)
+          .json({ message: "Internal server error", success: false });
+      }
 
-        // Verify password
-        let isPassEqual;
-        try {
-            isPassEqual = await bcrypt.compare(password, user.password);
-            if (!isPassEqual) {
-                return res.status(403).json({ message: "Invalid email or password", success: false });
-            }
-        } catch (error) {
-            console.error("Error comparing password during login:", error);
-            return res.status(500).json({ message: "Internal server error", success: false });
+      // Verify password
+      let isPassEqual;
+      try {
+        isPassEqual = await bcrypt.compare(password, user.password);
+        if (!isPassEqual) {
+          return res
+            .status(403)
+            .json({ message: "Invalid email or password", success: false });
         }
+      } catch (error) {
+        console.error("Error comparing password during login:", error);
+        return res
+          .status(500)
+          .json({ message: "Internal server error", success: false });
+      }
 
-        // Update last login time
-        user.lastLoginAt = new Date();
-        await user.save();
+      // Update last login time
+      user.lastLoginAt = new Date();
+      await user.save();
 
-        // Generate token
-        let token;
-        try {
-            token = jwt.sign(
-                { email: user.email, id: user._id, role: user.role, permissions: user.permissions, isVerified: user.isVerified },
-                secretKey,
-                { expiresIn: "30d" }
-            );
-        } catch (error) {
-            console.error("Error generating token during login:", error);
-            return res.status(500).json({ message: "Internal server error", success: false });
-        }
+      // Generate token
+      let token;
+      try {
+        token = jwt.sign(
+          {
+            email: user.email,
+            id: user._id,
+            role: user.role,
+            permissions: user.permissions,
+            isVerified: user.isVerified,
+          },
+          secretKey,
+          { expiresIn: "30d" },
+        );
+      } catch (error) {
+        console.error("Error generating token during login:", error);
+        return res
+          .status(500)
+          .json({ message: "Internal server error", success: false });
+      }
 
-        return res.status(200).json({
-            message: "Login successful",
-            success: true,
-            token,
-            user: {
-                id: user._id,
-                name: user.name,
-                email: user.email,
-                isAdmin: user.isAdmin,
-                isVerified: user.isVerified,
-                role: user.role,
-                permissions: user.permissions,
-                department: user.department,
-                lastActiveAt: user.lastActiveAt,
-                lastLoginAt: user.lastLoginAt,
-            },
-        });
-        console.log(`${user.name} just logged in to IISPPR!`);
+      return res.status(200).json({
+        message: "Login successful",
+        success: true,
+        token,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          isAdmin: user.isAdmin,
+          isVerified: user.isVerified,
+          role: user.role,
+          permissions: user.permissions,
+          department: user.department,
+          lastActiveAt: user.lastActiveAt,
+          lastLoginAt: user.lastLoginAt,
+        },
+      });
+      console.log(`${user.name} just logged in to IISPPR!`);
     } catch (error) {
       console.error("Error generating token during login:", error);
       return res
